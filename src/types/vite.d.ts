@@ -1,6 +1,8 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
+  // Stripe integration temporarily disabled
+  // readonly VITE_STRIPE_PUBLIC_KEY: string
   readonly VITE_OPENROUTER_ENDPOINT: string
   readonly VITE_OPENROUTER_GEMINI_KEY: string
   readonly VITE_OPENROUTER_DEEPSEEK_KEY: string
