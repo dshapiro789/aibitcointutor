@@ -81,16 +81,20 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    if (!this.currentModel.apiKey) {
-      throw new Error('API key is not configured');
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    console.log('API Key present:', !!apiKey);
+    
+    if (!apiKey) {
+      throw new Error('OpenRouter API key is not configured');
     }
 
     try {
+      console.log('Making request to OpenRouter with model:', this.currentModel.id);
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
@@ -137,9 +141,17 @@ export class AIService {
         currentModel: this.currentModel,
         apiKey: this.currentModel?.apiKey ? 'present' : 'missing'
       });
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to communicate with AI service'
-      );
+      const errorMessage = error instanceof Error ? error.message : 'Failed to communicate with AI service';
+      console.error('Full error details:', {
+        error,
+        currentModel: this.currentModel,
+        apiKeyPresent: !!apiKey,
+        env: {
+          VITE_OPENROUTER_API_KEY: !!import.meta.env.VITE_OPENROUTER_API_KEY,
+          NODE_ENV: import.meta.env.MODE
+        }
+      });
+      throw new Error(errorMessage);
     }
   }
 }
