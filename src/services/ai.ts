@@ -81,30 +81,47 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.currentModel.apiKey}`,
-        'HTTP-Referer': window.location.origin,
-        'X-Title': 'AI Bitcoin Tutor'
-      },
-      body: JSON.stringify({
-        model: this.currentModel.id,
-        messages: [
-          { role: 'user', content: text }
-        ],
-        temperature: this.currentModel.temperature || 0.7,
-        max_tokens: this.currentModel.maxTokens || 4096
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.statusText}`);
+    if (!this.currentModel.apiKey) {
+      throw new Error('API key is not configured');
     }
 
-    const data = await response.json();
-    return data.choices[0]?.message?.content || 'No response received';
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.currentModel.apiKey}`,
+          'HTTP-Referer': window.location.origin,
+          'X-Title': 'AI Bitcoin Tutor',
+          'OpenAI-Organization': 'aibitcointutor.com',
+          'or-organization-id': 'aibitcointutor.com',
+          'or-strategy': 'fallback'
+        },
+        body: JSON.stringify({
+          model: this.currentModel.id,
+          messages: [
+            { role: 'user', content: text }
+          ],
+          temperature: this.currentModel.temperature || 0.7,
+          max_tokens: this.currentModel.maxTokens || 4096
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(
+          `API error (${response.status}): ${errorData?.error?.message || response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      return data.choices[0]?.message?.content || 'No response received';
+    } catch (error) {
+      console.error('AI Service Error:', error);
+      throw new Error(
+        error instanceof Error ? error.message : 'Failed to communicate with AI service'
+      );
+    }
   }
 }
 
