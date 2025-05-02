@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 // Configure OpenAI with valid API key
 export const openai = new OpenAI({
-  apiKey: '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',
+  apiKey: import.meta.env.VITE_OPENROUTER_DEEPSEEK_KEY || '',
   dangerouslyAllowBrowser: true
 });
 
@@ -29,7 +29,7 @@ export const defaultModels: AIModel[] = [
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: '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',
+    apiKey: import.meta.env.VITE_OPENROUTER_GEMINI_KEY,
     active: true,
     contextLength: 32768,
     temperature: 0.7,
@@ -41,7 +41,7 @@ export const defaultModels: AIModel[] = [
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: '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',
+    apiKey: import.meta.env.VITE_OPENROUTER_DEEPSEEK_KEY,
     active: false,
     contextLength: 120000,
     temperature: 0.7,
@@ -53,7 +53,7 @@ export const defaultModels: AIModel[] = [
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: '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',
+    apiKey: import.meta.env.VITE_OPENROUTER_GEMMA_KEY,
     active: false,
     contextLength: 32768,
     temperature: 0.7,
