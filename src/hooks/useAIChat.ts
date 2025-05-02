@@ -176,6 +176,13 @@ export function useAIChat() {
     }, 1000);
 
     try {
+      console.log('Sending message to AI service:', {
+        modelName: model.name,
+        modelId: model.id,
+        textLength: text.length,
+        isPremium
+      });
+
       const response = await aiService.sendMessage(text);
 
       if (!isPremium && user) {
@@ -196,8 +203,31 @@ export function useAIChat() {
       setMessages(prev => [...prev, aiMessage]);
       setContextMemory(prev => prev + 1);
     } catch (err) {
-      console.error('AI Chat Error:', err);
-      setError(err instanceof Error ? err.message : 'Failed to get response from AI');
+      // Log the full error details
+      console.error('AI Chat Error:', {
+        error: err,
+        errorType: err?.constructor?.name,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined,
+        model: {
+          name: model.name,
+          id: model.id,
+          provider: model.provider
+        },
+        userContext: {
+          isPremium,
+          hasUser: !!user,
+          remainingMessages: user ? getRemainingMessages(user.id) : null
+        }
+      });
+
+      // Set a user-friendly error message
+      const errorMessage = err instanceof Error ? err.message : 'Failed to get response from AI';
+      setError(
+        errorMessage.includes('401') 
+          ? 'Authentication failed. Please check if your API key is configured correctly.'
+          : errorMessage
+      );
     } finally {
       clearInterval(thoughtInterval);
       setCurrentThoughts(null);

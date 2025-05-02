@@ -93,9 +93,30 @@ function AiChat() {
     setError(null);
     
     try {
+      console.log('Sending message with model:', {
+        modelId: activeModel.id,
+        modelProvider: activeModel.provider,
+        messageLength: message.length
+      });
+      
       await sendMessage(message, activeModel);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to send message');
+      console.error('Chat error details:', {
+        error: err,
+        errorType: err?.constructor?.name,
+        errorMessage: err instanceof Error ? err.message : String(err),
+        errorStack: err instanceof Error ? err.stack : undefined,
+        activeModel: {
+          id: activeModel.id,
+          provider: activeModel.provider
+        }
+      });
+      
+      setError(
+        err instanceof Error 
+          ? `Error: ${err.message}` 
+          : 'Failed to send message. Please check console for details.'
+      );
     }
   };
 
