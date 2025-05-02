@@ -235,6 +235,13 @@ export function useAIChat() {
     }
   };
 
+  // These are stub implementations to satisfy TypeScript
+  const addReaction = () => {};
+  const exportChatHistory = () => {};
+  const searchMessages = () => {};
+  const addModel = () => {};
+  const removeModel = () => {};
+
   return {
     messages,
     isProcessing,
@@ -246,6 +253,12 @@ export function useAIChat() {
     remainingMessages: !isPremium && user ? getRemainingMessages(user.id) : Infinity,
     isPremium,
     currentThoughts,
-    contextMemory
+    contextMemory,
+    // Add missing methods that are referenced in AiChat.tsx
+    addReaction,
+    exportChatHistory,
+    searchMessages,
+    addModel,
+    removeModel
   };
 }

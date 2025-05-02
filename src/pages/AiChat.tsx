@@ -13,6 +13,7 @@ import { useSubscriptionStore } from '../store/subscriptionStore';
 import { ChatMessage } from '../components/ChatMessage';
 import { useAIChat } from '../hooks/useAIChat';
 import { useVoice } from '../hooks/useVoice';
+import EnvironmentDebug from '../components/EnvironmentDebug';
 
 function AiChat() {
   const {
@@ -507,6 +508,9 @@ function AiChat() {
             </div>
           </div>
         )}
+        
+        {/* Environment debug tool */}
+        <EnvironmentDebug />
       </div>
     </div>
   );
