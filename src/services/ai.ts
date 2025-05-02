@@ -24,7 +24,7 @@ export interface AIModel {
 // Default model configurations
 export const defaultModels: AIModel[] = [
   {
-    id: 'google/gemini-2.5-pro-exp-03-25:free',
+    id: 'google/gemini-pro',
     name: 'Gemini Pro 2.5',
     provider: 'OpenRouter',
     apiKeyRequired: false,
@@ -36,7 +36,7 @@ export const defaultModels: AIModel[] = [
     maxTokens: 4096
   },
   {
-    id: 'deepseek/deepseek-chat-v3-0324:free',
+    id: 'deepseek-ai/deepseek-chat-v1',
     name: 'DeepSeek V3',
     provider: 'OpenRouter',
     apiKeyRequired: false,
@@ -48,7 +48,7 @@ export const defaultModels: AIModel[] = [
     maxTokens: 2000
   },
   {
-    id: 'google/gemma-3-27b-it:free',
+    id: 'google/gemma-7b-it',
     name: 'Gemma 3 27B',
     provider: 'OpenRouter',
     apiKeyRequired: false,
@@ -91,15 +91,14 @@ export class AIService {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.currentModel.apiKey}`,
-          'HTTP-Referer': window.location.origin,
+          'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
-          'OpenAI-Organization': 'aibitcointutor.com',
-          'or-organization-id': 'aibitcointutor.com',
-          'or-strategy': 'fallback'
+          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
         },
         body: JSON.stringify({
           model: this.currentModel.id,
           messages: [
+            { role: 'system', content: 'You are an AI Bitcoin Tutor, an expert in explaining Bitcoin, blockchain technology, and cryptocurrency concepts in a clear and engaging way.' },
             { role: 'user', content: text }
           ],
           temperature: this.currentModel.temperature || 0.7,
