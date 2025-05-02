@@ -112,46 +112,70 @@ export class AIService {
         })
       });
 
+      // Log request details
+      console.log('Request details:', {
+        url: 'https://openrouter.ai/api/v1/chat/completions',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer [REDACTED]',
+          'HTTP-Referer': 'https://aibitcointutor.com',
+          'X-Title': 'AI Bitcoin Tutor',
+          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
+        },
+        model: this.currentModel.id
+      });
+
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('OpenRouter Error Response:', {
-          status: response.status,
-          statusText: response.statusText,
-          headers: Object.fromEntries(response.headers.entries()),
-          body: errorText
-        });
-        
-        let errorMessage = `API error (${response.status}): ${response.statusText}`;
         try {
-          const errorData = JSON.parse(errorText);
-          if (errorData.error?.message) {
-            errorMessage += ` - ${errorData.error.message}`;
+          const errorText = await response.text();
+          console.error('OpenRouter Error Response:', {
+            status: response.status,
+            statusText: response.statusText,
+            headers: Object.fromEntries(response.headers.entries()),
+            body: errorText
+          });
+          
+          let errorMessage = `API error (${response.status}): ${response.statusText}`;
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.error?.message) {
+              errorMessage += ` - ${errorData.error.message}`;
+            }
+          } catch (parseError) {
+            console.error('Error parsing error response:', parseError);
+            errorMessage += ` - ${errorText}`;
           }
-        } catch (e) {
-          errorMessage += ` - ${errorText}`;
+          throw new Error(errorMessage);
+        } catch (responseError) {
+          console.error('Error handling response:', responseError);
+          throw new Error(`API error (${response.status}): ${response.statusText}`);
         }
-        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       return data.choices[0]?.message?.content || 'No response received';
     } catch (error) {
-      console.error('AI Service Error:', {
-        error,
-        currentModel: this.currentModel,
-        apiKey: this.currentModel?.apiKey ? 'present' : 'missing'
-      });
-      const errorMessage = error instanceof Error ? error.message : 'Failed to communicate with AI service';
-      console.error('Full error details:', {
-        error,
-        currentModel: this.currentModel,
+      // First log the raw error
+      console.error('Raw error object:', error);
+
+      // Then try to extract useful information
+      const errorInfo = {
+        message: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+        type: error?.constructor?.name,
+        currentModel: {
+          id: this.currentModel?.id,
+          provider: this.currentModel?.provider
+        },
         apiKeyPresent: !!apiKey,
         env: {
           VITE_OPENROUTER_API_KEY: !!import.meta.env.VITE_OPENROUTER_API_KEY,
           NODE_ENV: import.meta.env.MODE
         }
-      });
-      throw new Error(errorMessage);
+      };
+
+      console.error('AI Service Error Details:', errorInfo);
+      throw new Error(`AI Service Error: ${errorInfo.message}`);
     }
   }
 }
