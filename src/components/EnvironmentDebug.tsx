@@ -42,10 +42,10 @@ export const EnvironmentDebug: React.FC = () => {
     <div className="fixed bottom-4 right-4 z-50">
       <button
         onClick={generateDebugInfo}
-        className="bg-gray-800 text-white p-2 rounded-full shadow-lg"
+        className="bg-red-600 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-bold animate-pulse"
         title="Debug Environment"
       >
-        🔧
+        🔧 Debug API
       </button>
       {visible && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4">

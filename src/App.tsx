@@ -13,6 +13,7 @@ import { useAuthStore } from './store/authStore';
 import { useSubscriptionStore } from './store/subscriptionStore';
 import { RequireAuth } from './components/RequireAuth';
 import { RequireSubscription } from './components/RequireSubscription';
+import EnvironmentDebug from './components/EnvironmentDebug';
 
 function App() {
   const { restoreSession } = useAuthStore();
@@ -29,6 +30,7 @@ function App() {
       <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100/80">
         <Background />
         <Navbar />
+        <EnvironmentDebug />
         <main className="pt-4 pb-12 px-4 sm:px-6 lg:px-8">
           <Routes>
             <Route path="/" element={<Home />} />
