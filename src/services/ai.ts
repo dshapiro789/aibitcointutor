@@ -4,8 +4,13 @@ import OpenAI from 'openai';
 
 // Configure OpenAI with valid API key
 export const openai = new OpenAI({
-  apiKey: "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",
-  dangerouslyAllowBrowser: true
+  baseURL: "https://openrouter.ai/api/v1",
+  apiKey: "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",
+  dangerouslyAllowBrowser: true,
+  defaultHeaders: {
+    "HTTP-Referer": "https://aibitcointutor.com", // Site URL for rankings on openrouter.ai
+    "X-Title": "AI Bitcoin Tutor", // Site title for rankings on openrouter.ai
+  },
 });
 
 export interface AIModel {
@@ -42,16 +47,16 @@ export interface AIModel {
 export const defaultModels: AIModel[] = [
   {
     // UPGRADE POINT: Change this ID to use a new model
-    id: 'nvidia/llama-3.1-nemotron-ultra-253b-v1:free',
+    id: 'perplexity/sonar',
     // UPGRADE POINT: Update this name to match the new model
-    name: 'NVIDIA Llama 3.1 Ultra',
+    name: 'Perplexity Sonar',
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: "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",
+    apiKey: "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",
     active: true,
     // UPGRADE POINT: These parameters may need adjustment for different models
-    contextLength: 128000,
+    contextLength: 32768,  // Using a standard context size for Perplexity models
     temperature: 0.7,
     maxTokens: 4096
   }
@@ -103,8 +108,8 @@ export class AIService {
     }
 
     // Hardcoded API key for direct access
-    const apiKey = "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";
-    console.log('Using hardcoded API key for OpenRouter');
+    const apiKey = "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";
+    console.log('Using hardcoded API key for OpenRouter with Perplexity Sonar model');
     
     // We're using a hardcoded key, so this check is just a formality
     if (!apiKey) {
@@ -117,7 +122,7 @@ export class AIService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer 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`,
+          'Authorization': `Bearer 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`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
@@ -127,8 +132,28 @@ export class AIService {
           model: this.currentModel.id,
           route: 'openai', // UPGRADE POINT: Routing may change with different providers
           messages: [
-            // UPGRADE POINT: System message may need adjustment for different models
-            { role: 'system', content: 'Context: You are a Bitcoin, cryptocurrency, equity, gold, silver, investments, accounting and financials expert with infinite knowledge and wisdom on any and all related subject matters therein. You make a humble yet subtle effort to keep the conversation centered around Bitcoin as it pertains to these other related subjects, but not too aggressively unless it becomes evident that the user continues to veer off topic.\n\nYou are also an expert in communication and speaking multiple languages for any user that requests a different language.\n\nYou provide disclosures (as needed) incinuating that you\'re unable to offer financial advice when it comes to certain types of personalized questions, but can still follow through with offering detailed hypotehtical scenarios that carry a balanced level of discernment or rationale as needed.\n\nInclude detailed thinking whenever reasoning through complex scenarios.' },
+            // UPGRADE POINT: Update this system prompt for better AI guidance
+            {
+              role: 'system',
+              content: `You are a knowledgeable and friendly Bitcoin and financial educator. Your role is to provide clear, accurate information about Bitcoin, cryptocurrency, traditional finance, and related topics.
+
+Your expertise includes:
+- Bitcoin technology, history, and ecosystem
+- Cryptocurrency markets and technologies
+- Investment concepts and strategies
+- Traditional financial markets (equity, gold, silver, etc.)
+- Monetary policy and macroeconomics
+
+When answering questions:
+1. Be factual and balanced in your responses
+2. Provide citations to reputable sources when possible
+3. Explain complex concepts in accessible language
+4. Acknowledge different perspectives on controversial topics
+
+IMPORTANT: Always clarify that you provide educational information only, NOT financial advice. Never make price predictions or tell people what to do with their money.
+
+For technical questions, break down your answers into clear steps and explain underlying concepts.`
+            },
             { role: 'user', content: text }
           ],
           // UPGRADE POINT: These parameters can be fine-tuned for different models
@@ -143,7 +168,7 @@ export class AIService {
         url: 'https://openrouter.ai/api/v1/chat/completions',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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',
+          'Authorization': 'Bearer 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',
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
