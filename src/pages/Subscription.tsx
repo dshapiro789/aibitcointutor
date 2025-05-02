@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Shield } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 
 interface Plan {
@@ -129,6 +129,5 @@ const Subscription: React.FC = () => {
     </div>
   );
 };
-}
 
 export default Subscription;
