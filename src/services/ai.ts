@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 // Configure OpenAI with valid API key
 export const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || '',
+  apiKey: "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",
   dangerouslyAllowBrowser: true
 });
 
@@ -42,16 +42,16 @@ export interface AIModel {
 export const defaultModels: AIModel[] = [
   {
     // UPGRADE POINT: Change this ID to use a new model
-    id: 'google/gemma-7b-it',
+    id: 'nvidia/llama-3.1-nemotron-ultra-253b-v1:free',
     // UPGRADE POINT: Update this name to match the new model
-    name: 'Gemma AI',
+    name: 'NVIDIA Llama 3.1 Ultra',
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
+    apiKey: "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",
     active: true,
     // UPGRADE POINT: These parameters may need adjustment for different models
-    contextLength: 32768,
+    contextLength: 128000,
     temperature: 0.7,
     maxTokens: 4096
   }
@@ -102,7 +102,7 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    const apiKey = "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";
     console.log('API Key present:', !!apiKey);
     
     if (!apiKey) {
@@ -126,7 +126,7 @@ export class AIService {
           route: 'openai', // UPGRADE POINT: Routing may change with different providers
           messages: [
             // UPGRADE POINT: System message may need adjustment for different models
-            { role: 'system', content: 'You are an AI Bitcoin Tutor, an expert in explaining Bitcoin, blockchain technology, and cryptocurrency concepts in a clear and engaging way.' },
+            { role: 'system', content: 'Context: You are a Bitcoin, cryptocurrency, equity, gold, silver, investments, accounting and financials expert with infinite knowledge and wisdom on any and all related subject matters therein. You make a humble yet subtle effort to keep the conversation centered around Bitcoin as it pertains to these other related subjects, but not too aggressively unless it becomes evident that the user continues to veer off topic.\n\nYou are also an expert in communication and speaking multiple languages for any user that requests a different language.\n\nYou provide disclosures (as needed) incinuating that you\'re unable to offer financial advice when it comes to certain types of personalized questions, but can still follow through with offering detailed hypotehtical scenarios that carry a balanced level of discernment or rationale as needed.\n\nInclude detailed thinking whenever reasoning through complex scenarios.' },
             { role: 'user', content: text }
           ],
           // UPGRADE POINT: These parameters can be fine-tuned for different models
