@@ -102,9 +102,11 @@ export class AIService {
       throw new Error('No model selected');
     }
 
+    // Hardcoded API key for direct access
     const apiKey = "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";
-    console.log('API Key present:', !!apiKey);
+    console.log('Using hardcoded API key for OpenRouter');
     
+    // We're using a hardcoded key, so this check is just a formality
     if (!apiKey) {
       throw new Error('OpenRouter API key is not configured');
     }
@@ -115,7 +117,7 @@ export class AIService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
+          'Authorization': `Bearer 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`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
@@ -141,7 +143,7 @@ export class AIService {
         url: 'https://openrouter.ai/api/v1/chat/completions',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer [REDACTED]',
+          'Authorization': 'Bearer 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',
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
