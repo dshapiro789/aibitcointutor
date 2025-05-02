@@ -109,16 +109,34 @@ export class AIService {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(
-          `API error (${response.status}): ${errorData?.error?.message || response.statusText}`
-        );
+        const errorText = await response.text();
+        console.error('OpenRouter Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorText
+        });
+        
+        let errorMessage = `API error (${response.status}): ${response.statusText}`;
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error?.message) {
+            errorMessage += ` - ${errorData.error.message}`;
+          }
+        } catch (e) {
+          errorMessage += ` - ${errorText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       return data.choices[0]?.message?.content || 'No response received';
     } catch (error) {
-      console.error('AI Service Error:', error);
+      console.error('AI Service Error:', {
+        error,
+        currentModel: this.currentModel,
+        apiKey: this.currentModel?.apiKey ? 'present' : 'missing'
+      });
       throw new Error(
         error instanceof Error ? error.message : 'Failed to communicate with AI service'
       );
