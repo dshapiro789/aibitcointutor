@@ -1,0 +1,48 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Create env file
+        run: |
+          echo "VITE_OPENROUTER_ENDPOINT=${{ secrets.VITE_OPENROUTER_ENDPOINT }}" >> .env
+          echo "VITE_OPENROUTER_GEMINI_KEY=${{ secrets.VITE_OPENROUTER_GEMINI_KEY }}" >> .env
+          echo "VITE_OPENROUTER_DEEPSEEK_KEY=${{ secrets.VITE_OPENROUTER_DEEPSEEK_KEY }}" >> .env
+          echo "VITE_OPENROUTER_GEMMA_KEY=${{ secrets.VITE_OPENROUTER_GEMMA_KEY }}" >> .env
+          echo "VITE_OPENROUTER_GEMINI_MODEL=${{ secrets.VITE_OPENROUTER_GEMINI_MODEL }}" >> .env
+          echo "VITE_OPENROUTER_DEEPSEEK_MODEL=${{ secrets.VITE_OPENROUTER_DEEPSEEK_MODEL }}" >> .env
+          echo "VITE_OPENROUTER_GEMMA_MODEL=${{ secrets.VITE_OPENROUTER_GEMMA_MODEL }}" >> .env
+          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
+          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
+          echo "VITE_MAX_MESSAGES_PER_HOUR=${{ secrets.VITE_MAX_MESSAGES_PER_HOUR }}" >> .env
+          echo "VITE_ENABLE_VOICE=${{ secrets.VITE_ENABLE_VOICE }}" >> .env
+
+      - name: Build
+        run: npm run build
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: dist
+          branch: gh-pages
