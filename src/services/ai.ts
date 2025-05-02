@@ -4,7 +4,7 @@ import OpenAI from 'openai';
 
 // Configure OpenAI with valid API key
 export const openai = new OpenAI({
-  apiKey: import.meta.env.VITE_OPENROUTER_DEEPSEEK_KEY || '',
+  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || '',
   dangerouslyAllowBrowser: true
 });
 
@@ -29,7 +29,7 @@ export const defaultModels: AIModel[] = [
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: import.meta.env.VITE_OPENROUTER_GEMINI_KEY,
+    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
     active: true,
     contextLength: 32768,
     temperature: 0.7,
@@ -41,7 +41,7 @@ export const defaultModels: AIModel[] = [
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: import.meta.env.VITE_OPENROUTER_DEEPSEEK_KEY,
+    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
     active: false,
     contextLength: 120000,
     temperature: 0.7,
@@ -53,7 +53,7 @@ export const defaultModels: AIModel[] = [
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: import.meta.env.VITE_OPENROUTER_GEMMA_KEY,
+    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
     active: false,
     contextLength: 32768,
     temperature: 0.7,
@@ -90,7 +90,7 @@ export class AIService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${this.currentModel.apiKey}`,
+          'Authorization': `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
