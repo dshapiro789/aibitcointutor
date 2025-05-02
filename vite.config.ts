@@ -1,10 +1,12 @@
+/// <reference types="vite/client" />
+
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import wasm from 'vite-plugin-wasm';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 
 export default defineConfig({
-  base: './',
+  base: '/aibitcointutor/',
   plugins: [
     wasm(),
     react(),
@@ -44,7 +46,7 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         secure: false,
-        rewrite: (path) => path.replace(/^\/api/, '')
+        rewrite: (path: string) => path.replace(/^\/api/, '')
       }
     }
   }
