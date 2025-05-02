@@ -14,7 +14,7 @@ const getRepoName = () => {
 };
 
 export default defineConfig({
-  base: process.env.NODE_ENV === 'production' ? getRepoName() : '/',
+  base: process.env.NODE_ENV === 'production' ? '/aibitcointutor/' : '/',
   plugins: [
     wasm(),
     react(),
