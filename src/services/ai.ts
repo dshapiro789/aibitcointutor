@@ -2,10 +2,10 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 import OpenAI from 'openai';
 
-// Configure OpenAI with valid API key
+// Configure OpenAI with valid API key from environment variables
 export const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: "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",
+  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || '',
   dangerouslyAllowBrowser: true,
   defaultHeaders: {
     "HTTP-Referer": "https://aibitcointutor.com", // Site URL for rankings on openrouter.ai
@@ -53,7 +53,7 @@ export const defaultModels: AIModel[] = [
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: "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",
+    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || '',
     active: true,
     // UPGRADE POINT: These parameters may need adjustment for different models
     contextLength: 32768,  // Using a standard context size for Perplexity models
@@ -107,9 +107,9 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    // Hardcoded API key for direct access
-    const apiKey = "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";
-    console.log('Using hardcoded API key for OpenRouter with Perplexity Sonar model');
+    // Get API key from environment variables
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
+    console.log('Using API key from environment variables:', !!apiKey);
     
     // We're using a hardcoded key, so this check is just a formality
     if (!apiKey) {
@@ -122,7 +122,7 @@ export class AIService {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer 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`,
+          'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
@@ -168,7 +168,7 @@ For technical questions, break down your answers into clear steps and explain un
         url: 'https://openrouter.ai/api/v1/chat/completions',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer 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',
+          'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
