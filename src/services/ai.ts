@@ -97,12 +97,14 @@ export class AIService {
         },
         body: JSON.stringify({
           model: this.currentModel.id,
+          route: 'openai',
           messages: [
             { role: 'system', content: 'You are an AI Bitcoin Tutor, an expert in explaining Bitcoin, blockchain technology, and cryptocurrency concepts in a clear and engaging way.' },
             { role: 'user', content: text }
           ],
           temperature: this.currentModel.temperature || 0.7,
-          max_tokens: this.currentModel.maxTokens || 4096
+          max_tokens: this.currentModel.maxTokens || 4096,
+          stream: false
         })
       });
 
