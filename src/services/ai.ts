@@ -110,6 +110,7 @@ export class AIService {
     // Get API key from environment variables
     const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
     console.log('Using API key from environment variables:', !!apiKey);
+    console.log('API Key Format Check:', typeof apiKey === 'string' ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length-6)}` : 'Invalid key format');
     
     // We're using a hardcoded key, so this check is just a formality
     if (!apiKey) {
@@ -125,7 +126,8 @@ export class AIService {
           'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
-          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
+          'User-Agent': 'AI Bitcoin Tutor/1.0.0',
+          'OpenRouter-Completion-Model': 'perplexity/sonar'
         },
         // UPGRADE POINT: Request body structure may need to be updated for different models
         body: JSON.stringify({
@@ -171,7 +173,8 @@ For technical questions, break down your answers into clear steps and explain un
           'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
-          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
+          'User-Agent': 'AI Bitcoin Tutor/1.0.0',
+          'OpenRouter-Completion-Model': 'perplexity/sonar'
         },
         model: this.currentModel.id
       });
