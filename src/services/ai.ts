@@ -21,44 +21,56 @@ export interface AIModel {
   maxTokens?: number;
 }
 
-// Default model configurations
+// =============================================
+// MODEL CONFIGURATION
+// =============================================
+// To upgrade or change the AI model in the future:
+// 1. Update the 'id' field with the new model identifier from OpenRouter
+// 2. Update the 'name' field with a user-friendly name
+// 3. Adjust parameters like contextLength, temperature, and maxTokens as needed
+// 4. Ensure your OpenRouter API key has access to the new model
+//
+// Popular models to consider for future upgrades:
+// - Anthropic models: 'anthropic/claude-3-opus:beta', 'anthropic/claude-3-sonnet:beta'  
+// - OpenAI models: 'openai/gpt-4-turbo', 'openai/gpt-4o'
+// - Other Google models: 'google/gemini-pro', 'google/gemini-1.5-pro'
+//
+// For the latest models, check: https://openrouter.ai/docs
+// =============================================
+
+// Default model configuration
 export const defaultModels: AIModel[] = [
   {
-    id: 'google/gemini-pro',
-    name: 'Gemini Pro 2.5',
+    // UPGRADE POINT: Change this ID to use a new model
+    id: 'google/gemma-7b-it',
+    // UPGRADE POINT: Update this name to match the new model
+    name: 'Gemma AI',
     provider: 'OpenRouter',
     apiKeyRequired: false,
     apiEndpoint: 'https://openrouter.ai/api/v1',
     apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
     active: true,
-    contextLength: 32768,
-    temperature: 0.7,
-    maxTokens: 4096
-  },
-  {
-    id: 'deepseek-ai/deepseek-chat-v1',
-    name: 'DeepSeek V3',
-    provider: 'OpenRouter',
-    apiKeyRequired: false,
-    apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
-    active: false,
-    contextLength: 120000,
-    temperature: 0.7,
-    maxTokens: 2000
-  },
-  {
-    id: 'google/gemma-7b-it',
-    name: 'Gemma 3 27B',
-    provider: 'OpenRouter',
-    apiKeyRequired: false,
-    apiEndpoint: 'https://openrouter.ai/api/v1',
-    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
-    active: false,
+    // UPGRADE POINT: These parameters may need adjustment for different models
     contextLength: 32768,
     temperature: 0.7,
     maxTokens: 4096
   }
+  
+  // To add additional models, uncomment and modify this template:
+  /*
+  ,{
+    id: 'model/identifier',
+    name: 'Model Name',
+    provider: 'OpenRouter',
+    apiKeyRequired: false,
+    apiEndpoint: 'https://openrouter.ai/api/v1',
+    apiKey: import.meta.env.VITE_OPENROUTER_API_KEY,
+    active: false, // Set only one model to active: true
+    contextLength: 32768,
+    temperature: 0.7,
+    maxTokens: 4096
+  }
+  */
 ];
 
 export class AIService {
@@ -76,6 +88,15 @@ export class AIService {
     return this.currentModel;
   }
 
+  // =============================================
+  // SEND MESSAGE METHOD
+  // =============================================
+  // This method handles sending messages to the AI model through OpenRouter
+  // If you upgrade your model, you may need to adjust:
+  // 1. The format of the messages array
+  // 2. The request parameters like temperature and max_tokens
+  // 3. Response parsing logic if the new model returns different JSON structure
+  // =============================================
   async sendMessage(text: string): Promise<string> {
     if (!this.currentModel) {
       throw new Error('No model selected');
@@ -99,16 +120,19 @@ export class AIService {
           'X-Title': 'AI Bitcoin Tutor',
           'User-Agent': 'AI Bitcoin Tutor/1.0.0'
         },
+        // UPGRADE POINT: Request body structure may need to be updated for different models
         body: JSON.stringify({
           model: this.currentModel.id,
-          route: 'openai',
+          route: 'openai', // UPGRADE POINT: Routing may change with different providers
           messages: [
+            // UPGRADE POINT: System message may need adjustment for different models
             { role: 'system', content: 'You are an AI Bitcoin Tutor, an expert in explaining Bitcoin, blockchain technology, and cryptocurrency concepts in a clear and engaging way.' },
             { role: 'user', content: text }
           ],
+          // UPGRADE POINT: These parameters can be fine-tuned for different models
           temperature: this.currentModel.temperature || 0.7,
           max_tokens: this.currentModel.maxTokens || 4096,
-          stream: false
+          stream: false // UPGRADE POINT: Consider enabling streaming for real-time responses
         })
       });
 
@@ -152,7 +176,9 @@ export class AIService {
         }
       }
 
+      // UPGRADE POINT: Response parsing may need to change for different model providers
       const data = await response.json();
+      // UPGRADE POINT: Different models may structure their response differently
       return data.choices[0]?.message?.content || 'No response received';
     } catch (error) {
       // First log the raw error
