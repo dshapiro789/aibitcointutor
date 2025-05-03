@@ -13,11 +13,11 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-      VITE_MAX_MESSAGES_PER_HOUR: ${{ secrets.VITE_MAX_MESSAGES_PER_HOUR }}
-      VITE_ENABLE_VOICE: ${{ secrets.VITE_ENABLE_VOICE }}
+      VITE_OPENROUTER_API_KEY: "${{ secrets.VITE_OPENROUTER_API_KEY }}"
+      VITE_SUPABASE_URL: "${{ secrets.VITE_SUPABASE_URL }}"
+      VITE_SUPABASE_ANON_KEY: "${{ secrets.VITE_SUPABASE_ANON_KEY }}"
+      VITE_MAX_MESSAGES_PER_HOUR: "${{ secrets.VITE_MAX_MESSAGES_PER_HOUR }}"
+      VITE_ENABLE_VOICE: "${{ secrets.VITE_ENABLE_VOICE }}"
 
     steps:
       - uses: actions/checkout@v4
@@ -43,11 +43,12 @@ jobs:
 
       - name: Create env file
         run: |
-          echo "VITE_OPENROUTER_API_KEY=$VITE_OPENROUTER_API_KEY" >> .env
-          echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" >> .env
-          echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> .env
-          echo "VITE_MAX_MESSAGES_PER_HOUR=$VITE_MAX_MESSAGES_PER_HOUR" >> .env
-          echo "VITE_ENABLE_VOICE=$VITE_ENABLE_VOICE" >> .env
+          # Create env file with properly quoted values to avoid any formatting issues
+          echo "VITE_OPENROUTER_API_KEY='$VITE_OPENROUTER_API_KEY'" >> .env
+          echo "VITE_SUPABASE_URL='$VITE_SUPABASE_URL'" >> .env
+          echo "VITE_SUPABASE_ANON_KEY='$VITE_SUPABASE_ANON_KEY'" >> .env
+          echo "VITE_MAX_MESSAGES_PER_HOUR='$VITE_MAX_MESSAGES_PER_HOUR'" >> .env
+          echo "VITE_ENABLE_VOICE='$VITE_ENABLE_VOICE'" >> .env
           
           # Debug: Verify env vars are set (will be masked in logs)
           echo "Checking if OpenRouter API key is set: $(if [ -n "$VITE_OPENROUTER_API_KEY" ]; then echo "YES"; else echo "NO"; fi)"

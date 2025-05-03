@@ -4,7 +4,15 @@ import OpenAI from 'openai';
 
 // Get API key during build time - ensures it's embedded in the production bundle
 // This is required for GitHub Pages which can't access environment variables at runtime
-const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+
+// Sanitize the API key to remove any potential whitespace, quotes or line breaks
+let rawApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+
+// Remove any quotes that might have been added during the .env file creation
+rawApiKey = rawApiKey.replace(/^['"]|['"]$/g, '');
+
+// Trim any whitespace
+const apiKey = rawApiKey.trim();
 
 // Log the API key (masked) for debugging
 console.log('API Key availability check on init:', 
@@ -148,21 +156,22 @@ For technical questions, break down your answers into clear steps and explain un
       // Using direct fetch for maximum control
       console.log('Making request to OpenRouter with model:', this.currentModel.id);
       
-      // Try different formats of the Authorization header to troubleshoot
+      // Enhanced debugging for the API key
+      console.log('API Key availability check on init:', 
+        Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+      
+      // More detailed API key diagnostics without revealing the full key
+      console.log(`API key format check: ${apiKey.substring(0, 4)}${apiKey.length > 4 ? '...' : ''} (length: ${apiKey.length})`);
+      console.log('API key contains quotes:', /['"]/.test(apiKey));
+      console.log('API key contains whitespace:', /\s/.test(apiKey));
+      
+      // Try multiple authorization approaches
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
       
-      // Log only first few characters of API key for debugging (never log full key)
-      console.log(`API key format check: ${apiKey.substring(0, 4)}${apiKey.length > 4 ? '...' : ''} (length: ${apiKey.length})`);
-      
-      // Check if key starts with expected prefix
-      if (apiKey.startsWith('sk-')) {
-        headers['Authorization'] = `Bearer ${apiKey}`;
-      } else {
-        // Try direct key approach if key doesn't have expected format
-        headers['Authorization'] = apiKey;
-      }
+      // OpenRouter's expected format is: Authorization: Bearer sk-...
+      headers['Authorization'] = `Bearer ${apiKey}`;
       
       // Add required OpenRouter headers
       headers['HTTP-Referer'] = 'https://aibitcointutor.com';
