@@ -3,22 +3,11 @@ import hljs from 'highlight.js';
 import OpenAI from 'openai';
 
 // Get API key during build time - ensures it's embedded in the production bundle
-// This is required for GitHub Pages which can't access environment variables at runtime
-
-// Sanitize the API key to remove any potential whitespace, quotes or line breaks
-let rawApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
-
-// Remove any quotes that might have been added during the .env file creation
-rawApiKey = rawApiKey.replace(/^['"]|['"]$/g, '');
-
-// Trim any whitespace
-const apiKey = rawApiKey.trim();
+const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
 // Log the API key (masked) for debugging
-console.log('API Key availability check on init:', 
-  apiKey ? `Key present (starts with: ${apiKey.substring(0, 8)}...)` : 'No API key found');
-console.log('Environment variables available:', 
-  Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+console.log('API Key availability check:', 
+  apiKey ? `Key present (length: ${apiKey.length})` : 'No API key found');
 
 // Configure OpenAI with valid API key from environment variables
 export const openai = new OpenAI({
@@ -126,12 +115,6 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    // Get API key from environment variables
-    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
-    
-    console.log('API key check before request:', 
-      apiKey ? `Key available (starts with: ${apiKey.substring(0, 8)}...)` : 'No API key found');
-
     try {
       // Define the system prompt for Bitcoin expertise
       const systemPrompt = `You are a knowledgeable and friendly Bitcoin and financial educator. Your role is to provide clear, accurate information about Bitcoin, cryptocurrency, traditional finance, and related topics.
@@ -156,28 +139,13 @@ For technical questions, break down your answers into clear steps and explain un
       // Using direct fetch for maximum control
       console.log('Making request to OpenRouter with model:', this.currentModel.id);
       
-      // Enhanced debugging for the API key
-      console.log('API Key availability check on init:', 
-        Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
-      
-      // More detailed API key diagnostics without revealing the full key
-      console.log(`API key format check: ${apiKey.substring(0, 4)}${apiKey.length > 4 ? '...' : ''} (length: ${apiKey.length})`);
-      console.log('API key contains quotes:', /['"]/.test(apiKey));
-      console.log('API key contains whitespace:', /\s/.test(apiKey));
-      
-      // Try multiple authorization approaches
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json',
-      };
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
-          'X-Title': 'AI Bitcoin Tutor',
-          // Add API key as a separate header for redundancy
-          'X-API-KEY': apiKey
+          'X-Title': 'AI Bitcoin Tutor'
         },
         body: JSON.stringify({
           model: this.currentModel.id,
@@ -191,19 +159,17 @@ For technical questions, break down your answers into clear steps and explain un
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('OpenRouter Error Response:', {
+        const errorData = await response.text();
+        console.error('OpenRouter Error:', {
           status: response.status,
           statusText: response.statusText,
-          body: errorText
+          error: errorData
         });
         
-        // Enhanced error message showing API key presence (but not the actual key)
         if (response.status === 401) {
-          throw new Error(`Authentication failed (401): API key ${apiKey ? 'is present' : 'is missing'}. Check your repository secrets.`);
-        } else {
-          throw new Error(`API error (${response.status}): ${response.statusText}`);
+          throw new Error('Authentication failed: Please check your OpenRouter API key in the repository secrets');
         }
+        throw new Error(`API error (${response.status}): ${response.statusText}`);
       }
 
       // Parse the response
