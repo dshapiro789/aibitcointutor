@@ -107,37 +107,12 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    // Get API key from environment variables
-    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY;
-    console.log('Using API key from environment variables:', !!apiKey);
-    console.log('API Key Format Check:', typeof apiKey === 'string' ? `${apiKey.substring(0, 8)}...${apiKey.substring(apiKey.length-6)}` : 'Invalid key format');
-    
-    // We're using a hardcoded key, so this check is just a formality
-    if (!apiKey) {
-      throw new Error('OpenRouter API key is not configured');
-    }
-
     try {
-      console.log('Making request to OpenRouter with model:', this.currentModel.id);
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://aibitcointutor.com',
-          'X-Title': 'AI Bitcoin Tutor',
-          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
-        },
-        // UPGRADE POINT: Request body structure may need to be updated for different models
-        body: JSON.stringify({
-          model: this.currentModel.id,
-          route: 'openai', // UPGRADE POINT: Routing may change with different providers
-          provider: 'perplexity',
-          messages: [
-            // UPGRADE POINT: Update this system prompt for better AI guidance
-            {
-              role: 'system',
-              content: `You are a knowledgeable and friendly Bitcoin and financial educator. Your role is to provide clear, accurate information about Bitcoin, cryptocurrency, traditional finance, and related topics.
+      // Use the OpenAI client directly instead of fetch for better compatibility
+      console.log('Using OpenAI client with model:', this.currentModel.id);
+      
+      // Define the system prompt for Bitcoin expertise
+      const systemPrompt = `You are a knowledgeable and friendly Bitcoin and financial educator. Your role is to provide clear, accurate information about Bitcoin, cryptocurrency, traditional finance, and related topics.
 
 Your expertise includes:
 - Bitcoin technology, history, and ecosystem
@@ -154,83 +129,43 @@ When answering questions:
 
 IMPORTANT: Always clarify that you provide educational information only, NOT financial advice. Never make price predictions or tell people what to do with their money.
 
-For technical questions, break down your answers into clear steps and explain underlying concepts.`
-            },
-            { role: 'user', content: text }
-          ],
-          // UPGRADE POINT: These parameters can be fine-tuned for different models
-          temperature: this.currentModel.temperature || 0.7,
-          max_tokens: this.currentModel.maxTokens || 4096,
-          stream: false // UPGRADE POINT: Consider enabling streaming for real-time responses
-        })
+For technical questions, break down your answers into clear steps and explain underlying concepts.`;
+      
+      // Make the API call using the OpenAI client
+      const completion = await openai.chat.completions.create({
+        model: this.currentModel.id,
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: text }
+        ],
+        temperature: this.currentModel.temperature || 0.7,
+        max_tokens: this.currentModel.maxTokens || 4096
       });
 
-      // Log request details
-      console.log('Request details:', {
-        url: 'https://openrouter.ai/api/v1/chat/completions',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://aibitcointutor.com',
-          'X-Title': 'AI Bitcoin Tutor',
-          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
-        },
-        model: this.currentModel.id
-      });
-
-      if (!response.ok) {
-        try {
-          const errorText = await response.text();
-          console.error('OpenRouter Error Response:', {
-            status: response.status,
-            statusText: response.statusText,
-            headers: Object.fromEntries(response.headers.entries()),
-            body: errorText
-          });
-          
-          let errorMessage = `API error (${response.status}): ${response.statusText}`;
-          try {
-            const errorData = JSON.parse(errorText);
-            if (errorData.error?.message) {
-              errorMessage += ` - ${errorData.error.message}`;
-            }
-          } catch (parseError) {
-            console.error('Error parsing error response:', parseError);
-            errorMessage += ` - ${errorText}`;
-          }
-          throw new Error(errorMessage);
-        } catch (responseError) {
-          console.error('Error handling response:', responseError);
-          throw new Error(`API error (${response.status}): ${response.statusText}`);
+      console.log('OpenAI API response received successfully');
+      
+      // Extract the AI response
+      return completion.choices[0]?.message?.content || 'No response received';
+      
+    } catch (error) {
+      // Log detailed error information
+      console.error('AI Service Error:', error);
+      
+      // Format error message for the user
+      let errorMessage = 'An error occurred while communicating with the AI service';
+      
+      if (error instanceof Error) {
+        // Add more specific error information if available
+        errorMessage = `AI Service Error: ${error.message}`;
+        
+        // Extract API error details if present
+        if ('status' in error && typeof error.status === 'number') {
+          errorMessage += ` (Status: ${error.status})`;
         }
       }
-
-      // UPGRADE POINT: Response parsing may need to change for different model providers
-      const data = await response.json();
-      // UPGRADE POINT: Different models may structure their response differently
-      return data.choices[0]?.message?.content || 'No response received';
-    } catch (error) {
-      // First log the raw error
-      console.error('Raw error object:', error);
-
-      // Then try to extract useful information
-      const errorInfo = {
-        message: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined,
-        type: error?.constructor?.name,
-        currentModel: {
-          id: this.currentModel?.id,
-          provider: this.currentModel?.provider
-        },
-        apiKeyPresent: !!apiKey,
-        env: {
-          VITE_OPENROUTER_API_KEY: !!import.meta.env.VITE_OPENROUTER_API_KEY,
-          NODE_ENV: import.meta.env.MODE
-        }
-      };
-
-      console.error('AI Service Error Details:', errorInfo);
-      throw new Error(`AI Service Error: ${errorInfo.message}`);
+      
+      // Throw a formatted error with useful information
+      throw new Error(errorMessage);
     }
   }
 }
