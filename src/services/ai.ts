@@ -147,14 +147,30 @@ For technical questions, break down your answers into clear steps and explain un
       
       // Using direct fetch for maximum control
       console.log('Making request to OpenRouter with model:', this.currentModel.id);
+      
+      // Try different formats of the Authorization header to troubleshoot
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json',
+      };
+      
+      // Log only first few characters of API key for debugging (never log full key)
+      console.log(`API key format check: ${apiKey.substring(0, 4)}${apiKey.length > 4 ? '...' : ''} (length: ${apiKey.length})`);
+      
+      // Check if key starts with expected prefix
+      if (apiKey.startsWith('sk-')) {
+        headers['Authorization'] = `Bearer ${apiKey}`;
+      } else {
+        // Try direct key approach if key doesn't have expected format
+        headers['Authorization'] = apiKey;
+      }
+      
+      // Add required OpenRouter headers
+      headers['HTTP-Referer'] = 'https://aibitcointutor.com';
+      headers['X-Title'] = 'AI Bitcoin Tutor';
+        
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`,
-          'HTTP-Referer': 'https://aibitcointutor.com',
-          'X-Title': 'AI Bitcoin Tutor'
-        },
+        headers,
         body: JSON.stringify({
           model: this.currentModel.id,
           messages: [
