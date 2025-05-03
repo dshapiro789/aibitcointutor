@@ -2,7 +2,8 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 import OpenAI from 'openai';
 
-// API key used for authentication
+// Get API key during build time - ensures it's embedded in the production bundle
+// This is required for GitHub Pages which can't access environment variables at runtime
 const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 
 // Log the API key (masked) for debugging
@@ -173,7 +174,12 @@ For technical questions, break down your answers into clear steps and explain un
           body: errorText
         });
         
-        throw new Error(`API error (${response.status}): ${response.statusText}`);
+        // Enhanced error message showing API key presence (but not the actual key)
+        if (response.status === 401) {
+          throw new Error(`Authentication failed (401): API key ${apiKey ? 'is present' : 'is missing'}. Check your repository secrets.`);
+        } else {
+          throw new Error(`API error (${response.status}): ${response.statusText}`);
+        }
       }
 
       // Parse the response
