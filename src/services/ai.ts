@@ -169,17 +169,16 @@ For technical questions, break down your answers into clear steps and explain un
       const headers: Record<string, string> = {
         'Content-Type': 'application/json',
       };
-      
-      // OpenRouter's expected format is: Authorization: Bearer sk-...
-      headers['Authorization'] = `Bearer ${apiKey}`;
-      
-      // Add required OpenRouter headers
-      headers['HTTP-Referer'] = 'https://aibitcointutor.com';
-      headers['X-Title'] = 'AI Bitcoin Tutor';
-        
       const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://aibitcointutor.com',
+          'X-Title': 'AI Bitcoin Tutor',
+          // Add API key as a separate header for redundancy
+          'X-API-KEY': apiKey
+        },
         body: JSON.stringify({
           model: this.currentModel.id,
           messages: [
