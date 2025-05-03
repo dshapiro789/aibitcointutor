@@ -126,13 +126,13 @@ export class AIService {
           'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
-          'User-Agent': 'AI Bitcoin Tutor/1.0.0',
-          'OpenRouter-Completion-Model': 'perplexity/sonar'
+          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
         },
         // UPGRADE POINT: Request body structure may need to be updated for different models
         body: JSON.stringify({
           model: this.currentModel.id,
           route: 'openai', // UPGRADE POINT: Routing may change with different providers
+          provider: 'perplexity',
           messages: [
             // UPGRADE POINT: Update this system prompt for better AI guidance
             {
@@ -173,8 +173,7 @@ For technical questions, break down your answers into clear steps and explain un
           'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor',
-          'User-Agent': 'AI Bitcoin Tutor/1.0.0',
-          'OpenRouter-Completion-Model': 'perplexity/sonar'
+          'User-Agent': 'AI Bitcoin Tutor/1.0.0'
         },
         model: this.currentModel.id
       });
