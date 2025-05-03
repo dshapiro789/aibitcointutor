@@ -117,12 +117,8 @@ export class AIService {
       throw new Error('No model selected');
     }
 
-    // Hard-code the API key directly for testing
-    const HARDCODED_KEY = "sk-svcacct-U1taOU6oKaY2TPOrqjPGQADQGEy5uChUL9u_7d-R-5f4W4OrTbfttnEZxVwBQE-p0hT3BlbkFJz59AKHzPLnLBrMjCLqOufeuXJOn6IQmjQgwzrvoqQC6b6mwMQNCdqV0mqXHb2yFYUA";
-    
-    // Try to get API key from environment, fall back to hardcoded key
-    const envApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
-    const apiKey = envApiKey || HARDCODED_KEY;
+    // Get API key from environment variables
+    const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
     
     console.log('API key check before request:', 
       apiKey ? `Key available (starts with: ${apiKey.substring(0, 8)}...)` : 'No API key found');
