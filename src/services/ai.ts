@@ -2,14 +2,24 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 import OpenAI from 'openai';
 
+// API key used for authentication
+const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+
+// Log the API key (masked) for debugging
+console.log('API Key availability check on init:', 
+  apiKey ? `Key present (starts with: ${apiKey.substring(0, 8)}...)` : 'No API key found');
+console.log('Environment variables available:', 
+  Object.keys(import.meta.env).filter(key => key.startsWith('VITE_')));
+
 // Configure OpenAI with valid API key from environment variables
 export const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: import.meta.env.VITE_OPENROUTER_API_KEY || '',
+  apiKey: apiKey,
   dangerouslyAllowBrowser: true,
   defaultHeaders: {
     "HTTP-Referer": "https://aibitcointutor.com", // Site URL for rankings on openrouter.ai
     "X-Title": "AI Bitcoin Tutor", // Site title for rankings on openrouter.ai
+    "Content-Type": "application/json",
   },
 });
 
