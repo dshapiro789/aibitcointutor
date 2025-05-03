@@ -117,10 +117,17 @@ export class AIService {
       throw new Error('No model selected');
     }
 
+    // Hard-code the API key directly for testing
+    const HARDCODED_KEY = "sk-svcacct-U1taOU6oKaY2TPOrqjPGQADQGEy5uChUL9u_7d-R-5f4W4OrTbfttnEZxVwBQE-p0hT3BlbkFJz59AKHzPLnLBrMjCLqOufeuXJOn6IQmjQgwzrvoqQC6b6mwMQNCdqV0mqXHb2yFYUA";
+    
+    // Try to get API key from environment, fall back to hardcoded key
+    const envApiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+    const apiKey = envApiKey || HARDCODED_KEY;
+    
+    console.log('API key check before request:', 
+      apiKey ? `Key available (starts with: ${apiKey.substring(0, 8)}...)` : 'No API key found');
+
     try {
-      // Use the OpenAI client directly instead of fetch for better compatibility
-      console.log('Using OpenAI client with model:', this.currentModel.id);
-      
       // Define the system prompt for Bitcoin expertise
       const systemPrompt = `You are a knowledgeable and friendly Bitcoin and financial educator. Your role is to provide clear, accurate information about Bitcoin, cryptocurrency, traditional finance, and related topics.
 
@@ -141,21 +148,41 @@ IMPORTANT: Always clarify that you provide educational information only, NOT fin
 
 For technical questions, break down your answers into clear steps and explain underlying concepts.`;
       
-      // Make the API call using the OpenAI client
-      const completion = await openai.chat.completions.create({
-        model: this.currentModel.id,
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: text }
-        ],
-        temperature: this.currentModel.temperature || 0.7,
-        max_tokens: this.currentModel.maxTokens || 4096
+      // Using direct fetch for maximum control
+      console.log('Making request to OpenRouter with model:', this.currentModel.id);
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`,
+          'HTTP-Referer': 'https://aibitcointutor.com',
+          'X-Title': 'AI Bitcoin Tutor'
+        },
+        body: JSON.stringify({
+          model: this.currentModel.id,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: text }
+          ],
+          temperature: this.currentModel.temperature || 0.7,
+          max_tokens: this.currentModel.maxTokens || 4096
+        })
       });
 
-      console.log('OpenAI API response received successfully');
-      
-      // Extract the AI response
-      return completion.choices[0]?.message?.content || 'No response received';
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('OpenRouter Error Response:', {
+          status: response.status,
+          statusText: response.statusText,
+          body: errorText
+        });
+        
+        throw new Error(`API error (${response.status}): ${response.statusText}`);
+      }
+
+      // Parse the response
+      const data = await response.json();
+      return data.choices[0]?.message?.content || 'No response received';
       
     } catch (error) {
       // Log detailed error information
@@ -165,16 +192,9 @@ For technical questions, break down your answers into clear steps and explain un
       let errorMessage = 'An error occurred while communicating with the AI service';
       
       if (error instanceof Error) {
-        // Add more specific error information if available
         errorMessage = `AI Service Error: ${error.message}`;
-        
-        // Extract API error details if present
-        if ('status' in error && typeof error.status === 'number') {
-          errorMessage += ` (Status: ${error.status})`;
-        }
       }
       
-      // Throw a formatted error with useful information
       throw new Error(errorMessage);
     }
   }
