@@ -15,11 +15,11 @@ jobs:
     environment:
       name: production
     env:
-      VITE_OPENROUTER_API_KEY: ${{ vars.VITE_OPENROUTER_API_KEY }}
-      VITE_SUPABASE_URL: ${{ vars.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_ANON_KEY: ${{ vars.VITE_SUPABASE_ANON_KEY }}
-      VITE_MAX_MESSAGES_PER_HOUR: ${{ vars.VITE_MAX_MESSAGES_PER_HOUR }}
-      VITE_ENABLE_VOICE: ${{ vars.VITE_ENABLE_VOICE }}
+      VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
+      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_MAX_MESSAGES_PER_HOUR: "60"
+      VITE_ENABLE_VOICE: "true"
 
     steps:
       - uses: actions/checkout@v4
