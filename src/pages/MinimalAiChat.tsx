@@ -118,7 +118,7 @@ const MinimalAiChat: React.FC = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
               </div>
               <h3 className="text-xl font-semibold text-gray-900 mb-2">Welcome to AI Bitcoin Tutor</h3>
-              <p className="text-gray-600">Ask me anything about Bitcoin, cryptocurrency, or blockchain technology.</p>
+              <p className="text-gray-600">What would you like to learn about?</p>
             </div>
           </div>
         ) : (
@@ -184,6 +184,16 @@ const MinimalAiChat: React.FC = () => {
       )}
       
       <div className="sticky bottom-0 p-4 bg-gray-50 border-t">
+        {!isPremium && (
+          <div className="flex justify-center items-center mb-2 text-sm">
+            <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span>{remainingMessages} of {maxMessagesPerHour} messages remaining today</span>
+            </div>
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="flex gap-2">
           <input
             type="text"
