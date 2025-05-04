@@ -2,8 +2,9 @@ import { marked } from 'marked';
 import hljs from 'highlight.js';
 import OpenAI from 'openai';
 
-// Get API key during build time - ensures it's embedded in the production bundle
+// Get API key and endpoint during build time - ensures they're embedded in the production bundle
 const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
+const apiEndpoint = import.meta.env.VITE_OPENROUTER_ENDPOINT || 'https://openrouter.ai/api/v1';
 
 // Log the API key (masked) for debugging
 console.log('API Key availability check:', 
@@ -15,9 +16,9 @@ if (!apiKey) {
   throw new Error('OpenRouter API key is not configured. Please check your environment variables.');
 }
 
-// Configure OpenAI with valid API key from environment variables
+// Configure OpenAI with valid API key and endpoint from environment variables
 export const openai = new OpenAI({
-  baseURL: "https://openrouter.ai/api/v1",
+  baseURL: apiEndpoint,
   apiKey: apiKey,
   dangerouslyAllowBrowser: true,
   defaultHeaders: {
