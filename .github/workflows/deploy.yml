@@ -60,7 +60,7 @@ jobs:
           echo "Build environment:"
           echo "NODE_ENV: $NODE_ENV"
           echo "VITE_OPENROUTER_ENDPOINT: $VITE_OPENROUTER_ENDPOINT"
-          echo "VITE_MAX_MESSAGES_PER_HOUR: $VITE_MAX_MESSAGES_PER_HOUR"
+          echo "VITE_MAX_MESSAGES_PER_DAY: $VITE_MAX_MESSAGES_PER_DAY"
           echo "VITE_ENABLE_VOICE: $VITE_ENABLE_VOICE"
           
           # Show npm and node versions
