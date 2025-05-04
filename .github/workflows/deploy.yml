@@ -42,8 +42,9 @@ jobs:
 
       - name: Install dependencies
         run: |
-          npm ci
+          npm ci --legacy-peer-deps
           npm install -g typescript
+          npm install --legacy-peer-deps three @react-three/fiber @react-three/drei @types/three
 
       - name: Create env file
         run: |
@@ -63,12 +64,24 @@ jobs:
           # Show environment variables (excluding secrets)
           echo "Build environment:"
           echo "NODE_ENV: $NODE_ENV"
+          echo "VITE_OPENROUTER_ENDPOINT: $VITE_OPENROUTER_ENDPOINT"
           echo "VITE_MAX_MESSAGES_PER_HOUR: $VITE_MAX_MESSAGES_PER_HOUR"
           echo "VITE_ENABLE_VOICE: $VITE_ENABLE_VOICE"
           
           # Show npm and node versions
           echo "Node version: $(node -v)"
           echo "NPM version: $(npm -v)"
+          
+          # Check if API key is properly set (without revealing the key)
+          if [ -z "$VITE_OPENROUTER_API_KEY" ]; then
+            echo "ERROR: VITE_OPENROUTER_API_KEY is not set!"
+          else
+            echo "VITE_OPENROUTER_API_KEY is set (length: ${#VITE_OPENROUTER_API_KEY})"
+          fi
+          
+          # List package.json dependencies
+          echo "Package dependencies:"
+          grep -A 20 '"dependencies"' package.json
           
           # Run build with detailed error output
           export NODE_ENV=production
