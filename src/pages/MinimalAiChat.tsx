@@ -224,7 +224,7 @@ const MinimalAiChat: React.FC = () => {
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask about Bitcoin..."
             className="flex-1 px-4 py-3 bg-white border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            disabled={isLoading}
+            disabled={isProcessing}
           />
           <button
             type="submit"
