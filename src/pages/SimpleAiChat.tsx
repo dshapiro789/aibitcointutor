@@ -97,27 +97,6 @@ const SimpleAiChat: React.FC = () => {
   // Basic rendering of the chat interface
   return (
     <div className="flex flex-col h-screen bg-gray-50">
-      {/* Basic Header */}
-      <header className="bg-white p-4 shadow-sm flex justify-between items-center">
-        <div className="flex items-center">
-          <Bot className="h-6 w-6 text-orange-500 mr-2" />
-          <h1 className="text-xl font-bold">AI Bitcoin Tutor</h1>
-        </div>
-        <div className="flex items-center space-x-3">
-          <button 
-            onClick={() => navigate('/subscription')}
-            className="p-2 rounded hover:bg-gray-100"
-          >
-            <CreditCard className="h-5 w-5 text-gray-600" />
-          </button>
-          <button 
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-2 rounded hover:bg-gray-100"
-          >
-            <Settings className="h-5 w-5 text-gray-600" />
-          </button>
-        </div>
-      </header>
 
       {/* Settings Panel (Simplified) */}
       {showSettings && (
