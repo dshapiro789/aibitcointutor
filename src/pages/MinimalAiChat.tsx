@@ -1,30 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { openai } from '../services/ai';
-import { ChatCompletionMessageParam } from 'openai/resources';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { useAIChat } from '../hooks/useAIChat';
+import { useAuthStore } from '../store/authStore';
 
 // A minimal component with no dependencies on complex libraries
 const MinimalAiChat: React.FC = () => {
-  const {
-    messages,
-    isProcessing,
-    error: chatError,
-    models,
-    sendMessage,
-    updateModel,
-    remainingMessages = 0,
-    isPremium = false,
-    currentThoughts,
-    addReaction,
-  } = useAIChat() || {};
+  // Use auth store
+  const { user } = useAuthStore();
+  
+  // First initialize a basic state
+  const [isComponentLoading, setIsComponentLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [input, setInput] = useState('');
+  
+  // Then safely use the AI chat hook
+  const aiChat = useAIChat();
+  
+  // Extract values with safe null checks
+  const messages = aiChat?.messages || [];
+  const isProcessing = aiChat?.isProcessing || false;
+  const models = aiChat?.models || [];
+  const remainingMessages = aiChat?.remainingMessages || 0;
+  const isPremium = aiChat?.isPremium || false;
+  const chatError = aiChat?.error;
   
   // Default values and fallbacks
   const maxMessagesPerHour = 20; // Default value if not provided from environment
-  const [input, setInput] = useState('');
-  // Use the error state from the hook but allow local overrides
-  const [error, setError] = useState<string | null>(null);
-
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Scroll to bottom when messages change
@@ -34,14 +36,22 @@ const MinimalAiChat: React.FC = () => {
     }
   }, [messages]);
 
-  // Very simplified send message function
+  // Check if component is ready to display after a delay
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsComponentLoading(false);
+    }, 1000); // Wait for hook to initialize
+    
+    return () => clearTimeout(timer);
+  }, []);
+
   // Handle error propagation
   useEffect(() => {
     if (chatError) {
-      setError(chatError);
+      setError(typeof chatError === 'string' ? chatError : 'An error occurred');
     }
   }, [chatError]);
-
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() || isProcessing) return;
@@ -49,12 +59,22 @@ const MinimalAiChat: React.FC = () => {
     try {
       setInput('');
       setError(null);
+      
+      // Safely get the functions from aiChat
+      const updateModel = aiChat?.updateModel || (() => {});
+      const sendMessage = aiChat?.sendMessage || (() => Promise.resolve());
 
-      // Find active model
-      const activeModel = models?.find(m => m.active);
+      // Find active model or use the first one available
+      const activeModel = models?.find(m => m.active) || (models && models.length > 0 ? models[0] : null);
+      
       if (!activeModel) {
-        setError('Please select an AI model');
+        setError('No AI models available. Please check your configuration.');
         return;
+      }
+      
+      // If no model is active but we have models, activate the first one
+      if (models && models.length > 0 && !models.some(m => m.active)) {
+        updateModel(models[0].id, { active: true });
       }
       
       // Use the existing sendMessage function from useAIChat
@@ -84,6 +104,33 @@ const MinimalAiChat: React.FC = () => {
   };
 
   // Super minimal UI with enhanced styling
+  // Loading/error states
+  if (isComponentLoading) {
+    return (
+      <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-md p-8 text-center">
+        <div className="animate-pulse">
+          <div className="h-4 bg-gray-200 rounded w-1/4 mx-auto mb-2.5"></div>
+          <div className="h-4 bg-gray-200 rounded w-1/2 mx-auto mb-2.5"></div>
+          <div className="h-4 bg-gray-200 rounded w-3/4 mx-auto"></div>
+        </div>
+        <p className="mt-4 text-gray-600">Loading chat interface...</p>
+      </div>
+    );
+  }
+
+  // Check if we have models loaded
+  if (!models || models.length === 0) {
+    return (
+      <div className="max-w-5xl mx-auto bg-white rounded-xl shadow-md p-8">
+        <div className="text-center text-red-500">
+          <h2 className="text-xl font-semibold mb-2">Configuration Error</h2>
+          <p>No AI models available. Please check your API configuration.</p>
+          <p className="mt-2 text-sm text-gray-600">If you're an administrator, verify that your API keys are set correctly in the environment variables.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full max-w-4xl mx-auto">
       <div className="flex-1 overflow-y-auto p-4 mb-4 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">

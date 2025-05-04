@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
     env:
       NODE_ENV: production
-      VITE_OPENROUTER_API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
+      VITE_OPENROUTER_API_KEY: "${{ secrets.VITE_OPENROUTER_API_KEY }}"
       VITE_OPENROUTER_ENDPOINT: "https://openrouter.ai/api/v1"
-      VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-      VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+      VITE_SUPABASE_URL: "${{ secrets.VITE_SUPABASE_URL }}"
+      VITE_SUPABASE_ANON_KEY: "${{ secrets.VITE_SUPABASE_ANON_KEY }}"
       VITE_MAX_MESSAGES_PER_HOUR: "20"
       VITE_ENABLE_VOICE: "true"
 

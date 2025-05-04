@@ -359,7 +359,7 @@ const AiChat: React.FC = () => {
                   </h3>
                   
                   <div className="p-3 bg-gray-50 rounded-lg mb-4">
-                    {isPremium ? (
+                    {isPremium === true ? (
                       <div className="flex items-center text-green-700">
                         <Crown className="h-5 w-5 mr-2 text-yellow-500" />
                         <div>
