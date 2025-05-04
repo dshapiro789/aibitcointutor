@@ -6,7 +6,7 @@ import { useSubscriptionStore } from './subscriptionStore';
 interface ChatLimit {
   messageCount: number;
   lastReset: number;
-  hourlyLimit: number;
+  dailyLimit: number;
 }
 
 interface ChatLimitStore {
@@ -15,6 +15,9 @@ interface ChatLimitStore {
   incrementCount: (userId: string) => void;
   getRemainingMessages: (userId: string) => number;
 }
+
+const DAILY_LIMIT = 5;
+const DAY_IN_MS = 86400000; // 24 hours in milliseconds
 
 export const useChatLimitStore = create<ChatLimitStore>()(
   persist(
@@ -34,24 +37,24 @@ export const useChatLimitStore = create<ChatLimitStore>()(
         if (!limit) return true;
 
         const now = Date.now();
-        const hourAgo = now - 3600000; // 1 hour in milliseconds
+        const dayAgo = now - DAY_IN_MS;
 
-        // Reset counter if it's been more than an hour
-        if (limit.lastReset < hourAgo) {
+        // Reset counter if it's been more than a day
+        if (limit.lastReset < dayAgo) {
           set((state) => ({
             limits: {
               ...state.limits,
               [userId]: {
                 messageCount: 0,
                 lastReset: now,
-                hourlyLimit: 15
+                dailyLimit: DAILY_LIMIT
               }
             }
           }));
           return true;
         }
 
-        return limit.messageCount < limit.hourlyLimit;
+        return limit.messageCount < limit.dailyLimit;
       },
 
       incrementCount: (userId: string) => {
@@ -63,13 +66,31 @@ export const useChatLimitStore = create<ChatLimitStore>()(
         if (isPremium) return;
 
         const now = Date.now();
+        const limit = get().limits[userId];
+        const dayAgo = now - DAY_IN_MS;
+
+        // If it's been more than a day, reset the counter
+        if (!limit || limit.lastReset < dayAgo) {
+          set((state) => ({
+            limits: {
+              ...state.limits,
+              [userId]: {
+                messageCount: 1,
+                lastReset: now,
+                dailyLimit: DAILY_LIMIT
+              }
+            }
+          }));
+          return;
+        }
+
+        // Otherwise increment the existing counter
         set((state) => ({
           limits: {
             ...state.limits,
             [userId]: {
-              messageCount: (state.limits[userId]?.messageCount || 0) + 1,
-              lastReset: state.limits[userId]?.lastReset || now,
-              hourlyLimit: 15
+              ...limit,
+              messageCount: limit.messageCount + 1
             }
           }
         }));
@@ -85,16 +106,16 @@ export const useChatLimitStore = create<ChatLimitStore>()(
         if (isPremium) return Infinity;
 
         const limit = get().limits[userId];
-        if (!limit) return 15;
+        if (!limit) return DAILY_LIMIT;
 
         const now = Date.now();
-        const hourAgo = now - 3600000;
+        const dayAgo = now - DAY_IN_MS;
 
-        if (limit.lastReset < hourAgo) {
-          return 15;
+        if (limit.lastReset < dayAgo) {
+          return DAILY_LIMIT;
         }
 
-        return Math.max(0, limit.hourlyLimit - limit.messageCount);
+        return Math.max(0, limit.dailyLimit - limit.messageCount);
       }
     }),
     {
