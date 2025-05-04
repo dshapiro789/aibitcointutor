@@ -12,14 +12,6 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      NODE_ENV: production
-      VITE_OPENROUTER_API_KEY: "${{ secrets.VITE_OPENROUTER_API_KEY }}"
-      VITE_OPENROUTER_ENDPOINT: "https://openrouter.ai/api/v1"
-      VITE_SUPABASE_URL: "${{ secrets.VITE_SUPABASE_URL }}"
-      VITE_SUPABASE_ANON_KEY: "${{ secrets.VITE_SUPABASE_ANON_KEY }}"
-      VITE_MAX_MESSAGES_PER_HOUR: "20"
-      VITE_ENABLE_VOICE: "true"
 
     steps:
       - uses: actions/checkout@v4
@@ -47,19 +39,26 @@ jobs:
           npm install --legacy-peer-deps three @react-three/fiber @react-three/drei @types/three
 
       - name: Create env file
+        env:
+          API_KEY: ${{ secrets.VITE_OPENROUTER_API_KEY }}
+          DB_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          DB_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         run: |
-          # Create env file
-          echo "VITE_OPENROUTER_API_KEY=$VITE_OPENROUTER_API_KEY" >> .env
-          echo "VITE_OPENROUTER_ENDPOINT=$VITE_OPENROUTER_ENDPOINT" >> .env
-          echo "VITE_SUPABASE_URL=$VITE_SUPABASE_URL" >> .env
-          echo "VITE_SUPABASE_ANON_KEY=$VITE_SUPABASE_ANON_KEY" >> .env
-          echo "VITE_MAX_MESSAGES_PER_HOUR=$VITE_MAX_MESSAGES_PER_HOUR" >> .env
-          echo "VITE_ENABLE_VOICE=$VITE_ENABLE_VOICE" >> .env
+          # Create env file from secrets
+          touch .env
+          echo "VITE_OPENROUTER_API_KEY=$API_KEY" >> .env
+          echo "VITE_OPENROUTER_ENDPOINT=https://openrouter.ai/api/v1" >> .env
+          echo "VITE_SUPABASE_URL=$DB_URL" >> .env
+          echo "VITE_SUPABASE_ANON_KEY=$DB_KEY" >> .env
+          echo "VITE_MAX_MESSAGES_PER_DAY=5" >> .env
+          echo "VITE_ENABLE_VOICE=true" >> .env
 
           # Debug: Show env file exists (without content)
           ls -la .env
 
       - name: Build
+        env:
+          NODE_ENV: production
         run: |
           # Show environment variables (excluding secrets)
           echo "Build environment:"

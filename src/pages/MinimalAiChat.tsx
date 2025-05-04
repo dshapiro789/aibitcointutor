@@ -26,7 +26,7 @@ const MinimalAiChat: React.FC = () => {
   const chatError = aiChat?.error;
   
   // Default values and fallbacks
-  const maxMessagesPerHour = 20; // Default value if not provided from environment
+  const maxMessagesPerDay = 5; // Reduced message limit as requested
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   // Scroll to bottom when messages change
@@ -207,13 +207,13 @@ const MinimalAiChat: React.FC = () => {
       )}
       
       <div className="sticky bottom-0 p-4 bg-gray-50 border-t">
-        {isPremium === false && remainingMessages !== undefined && (
+        {!isPremium && (
           <div className="flex justify-center items-center mb-2 text-sm">
             <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>{remainingMessages || 0} of {maxMessagesPerHour} messages remaining today</span>
+              <span data-component-name="MinimalAiChat">{remainingMessages || 0} of {maxMessagesPerDay} messages remaining today</span>
             </div>
           </div>
         )}

@@ -3,28 +3,31 @@ import { persist } from 'zustand/middleware';
 import { useAuthStore } from './authStore';
 import { useSubscriptionStore } from './subscriptionStore';
 
-interface ChatLimit {
-  messageCount: number;
-  lastReset: number;
-  dailyLimit: number;
-}
-
 interface ChatLimitStore {
-  limits: Record<string, ChatLimit>;
+  messageCount: Record<string, number>;
   checkLimit: (userId: string) => boolean;
   incrementCount: (userId: string) => void;
   getRemainingMessages: (userId: string) => number;
 }
 
-const DAILY_LIMIT = 5;
-const DAY_IN_MS = 86400000; // 24 hours in milliseconds
+const STORAGE_KEY = 'chat-limits';
+const MAX_MESSAGES_PER_DAY = 5;
+
+// Helper to get a key for the current day
+const getCurrentDayKey = () => {
+  const date = new Date();
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+};
 
 export const useChatLimitStore = create<ChatLimitStore>()(
   persist(
     (set, get) => ({
-      limits: {},
-      
+      messageCount: {},
+
+      // Check if the user has reached the message limit for the current day
       checkLimit: (userId: string) => {
+        if (!userId) return false;
+        
         // Check if user is premium or admin
         const { user } = useAuthStore.getState();
         const { subscription } = useSubscriptionStore.getState();
@@ -33,70 +36,52 @@ export const useChatLimitStore = create<ChatLimitStore>()(
         // Premium users have unlimited access
         if (isPremium) return true;
 
-        const limit = get().limits[userId];
-        if (!limit) return true;
-
-        const now = Date.now();
-        const dayAgo = now - DAY_IN_MS;
-
-        // Reset counter if it's been more than a day
-        if (limit.lastReset < dayAgo) {
-          set((state) => ({
-            limits: {
-              ...state.limits,
-              [userId]: {
-                messageCount: 0,
-                lastReset: now,
-                dailyLimit: DAILY_LIMIT
-              }
-            }
-          }));
-          return true;
-        }
-
-        return limit.messageCount < limit.dailyLimit;
+        const { messageCount = {} } = get();
+        const userKey = `${userId}_${getCurrentDayKey()}`;
+        const count = messageCount[userKey] || 0;
+        const maxMessagesPerDay = typeof window !== 'undefined' && 
+          window.localStorage.getItem('MAX_MESSAGES_PER_DAY') ? 
+          parseInt(window.localStorage.getItem('MAX_MESSAGES_PER_DAY') || '5') : 
+          MAX_MESSAGES_PER_DAY;
+        
+        return count < maxMessagesPerDay;
       },
 
+      // Increment the message count for the current day
       incrementCount: (userId: string) => {
+        if (!userId) return;
+        
         // Don't increment count for premium users
         const { user } = useAuthStore.getState();
         const { subscription } = useSubscriptionStore.getState();
         const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
         
         if (isPremium) return;
+        
+        const { messageCount = {} } = get();
+        const userKey = `${userId}_${getCurrentDayKey()}`;
+        const newCount = (messageCount[userKey] || 0) + 1;
+        
+        set({
+          messageCount: {
+            ...messageCount,
+            [userKey]: newCount
+          }
+        });
 
-        const now = Date.now();
-        const limit = get().limits[userId];
-        const dayAgo = now - DAY_IN_MS;
-
-        // If it's been more than a day, reset the counter
-        if (!limit || limit.lastReset < dayAgo) {
-          set((state) => ({
-            limits: {
-              ...state.limits,
-              [userId]: {
-                messageCount: 1,
-                lastReset: now,
-                dailyLimit: DAILY_LIMIT
-              }
-            }
-          }));
-          return;
-        }
-
-        // Otherwise increment the existing counter
-        set((state) => ({
-          limits: {
-            ...state.limits,
-            [userId]: {
-              ...limit,
-              messageCount: limit.messageCount + 1
-            }
+        // Store in local storage
+        localStorage.setItem(STORAGE_KEY, JSON.stringify({
+          messageCount: {
+            ...messageCount,
+            [userKey]: newCount
           }
         }));
       },
 
+      // Get the remaining messages for the current day
       getRemainingMessages: (userId: string) => {
+        if (!userId) return 0;
+        
         // Check if user is premium or admin
         const { user } = useAuthStore.getState();
         const { subscription } = useSubscriptionStore.getState();
@@ -104,22 +89,21 @@ export const useChatLimitStore = create<ChatLimitStore>()(
         
         // Premium users have unlimited messages
         if (isPremium) return Infinity;
-
-        const limit = get().limits[userId];
-        if (!limit) return DAILY_LIMIT;
-
-        const now = Date.now();
-        const dayAgo = now - DAY_IN_MS;
-
-        if (limit.lastReset < dayAgo) {
-          return DAILY_LIMIT;
-        }
-
-        return Math.max(0, limit.dailyLimit - limit.messageCount);
+        
+        const { messageCount = {} } = get();
+        const userKey = `${userId}_${getCurrentDayKey()}`;
+        const count = messageCount[userKey] || 0;
+        const maxMessagesPerDay = typeof window !== 'undefined' && 
+          window.localStorage.getItem('MAX_MESSAGES_PER_DAY') ? 
+          parseInt(window.localStorage.getItem('MAX_MESSAGES_PER_DAY') || '5') : 
+          MAX_MESSAGES_PER_DAY;
+        
+        return Math.max(0, maxMessagesPerDay - count);
       }
     }),
     {
-      name: 'chat-limits'
+      name: STORAGE_KEY,
+      getStorage: () => localStorage
     }
   )
 );
