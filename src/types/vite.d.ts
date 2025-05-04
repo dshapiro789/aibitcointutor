@@ -12,7 +12,7 @@ interface ImportMetaEnv {
   readonly VITE_OPENROUTER_GEMMA_MODEL: string
   readonly VITE_SUPABASE_URL: string
   readonly VITE_SUPABASE_ANON_KEY: string
-  readonly VITE_MAX_MESSAGES_PER_HOUR: string
+  readonly VITE_MAX_MESSAGES_PER_DAY: string
   readonly VITE_ENABLE_VOICE: string
 }
 
