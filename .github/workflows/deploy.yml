@@ -83,9 +83,43 @@ jobs:
           echo "Package dependencies:"
           grep -A 20 '"dependencies"' package.json
           
-          # Run build with detailed error output
+          # Create production-specific build script
+          echo '{
+            "name": "build:prod",
+            "command": "vite build --config vite.config.js --mode production"
+          }' > prod-build.json
+          echo "Using production build configuration:"
+          cat vite.config.js
+          
+          # Create special build script that uses main.prod.tsx
+          cat > build-prod.js << 'EOL'
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Create backup of original main.tsx
+          fs.copyFileSync(
+            path.resolve(__dirname, 'src/main.tsx'),
+            path.resolve(__dirname, 'src/main.tsx.bak')
+          );
+          
+          // Replace with production version
+          fs.copyFileSync(
+            path.resolve(__dirname, 'src/main.prod.tsx'),
+            path.resolve(__dirname, 'src/main.tsx')
+          );
+          
+          console.log('Production entry point configured');
+          EOL
+          
+          # Setup production build
+          node build-prod.js
+          
+          # Run production build with additional flags
           export NODE_ENV=production
           npm run build || {
+            echo "Standard build failed. Trying with additional flags..."
+            NODE_OPTIONS=--max_old_space_size=4096 npm run build
+          } || {
             echo "Build failed. Checking for TypeScript errors..."
             npx tsc --noEmit
             echo "Checking for other build issues..."
