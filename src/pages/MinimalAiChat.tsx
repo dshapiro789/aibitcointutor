@@ -1,6 +1,52 @@
 import React, { useState, useEffect, useRef } from 'react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+// Simple markdown rendering - avoiding ReactMarkdown library
+function simpleMarkdownToHtml(text: string): string {
+  if (!text) return '';
+  
+  try {
+    // Convert headers
+    let html = text
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+    
+    // Convert bold text
+    html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+    
+    // Convert italic text
+    html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+    
+    // Convert code blocks
+    html = html.replace(/```(.+?)\n([\s\S]*?)```/g, '<pre><code class="language-$1">$2</code></pre>');
+    
+    // Convert inline code
+    html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+    
+    // Convert unordered lists
+    html = html.replace(/^\s*[-*]\s+(.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>');
+    
+    // Convert ordered lists
+    html = html.replace(/^\s*\d+\.\s+(.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>)/gs, '<ol>$1</ol>');
+    
+    // Convert paragraphs
+    html = html.replace(/^([^<\n][^\n]+)$/gm, '<p>$1</p>');
+    
+    // Fix multiple paragraph tags
+    html = html.replace(/<\/p><p>/g, '</p>\n<p>');
+    
+    // Replace multiple newlines
+    html = html.replace(/\n\n+/g, '\n');
+    
+    return html;
+  } catch (err) {
+    console.error('Error converting markdown to HTML:', err);
+    return text;
+  }
+}
+
+// This component has been intentionally removed as part of the optimization
 import { useAIChat } from '../hooks/useAIChat';
 import { useAuthStore } from '../store/authStore';
 
@@ -85,22 +131,9 @@ const MinimalAiChat: React.FC = () => {
     }
   };
 
-  // Format markdown content to replace ### and ** with proper headings and formatting
+  // Simple passthrough - formatting is now handled by simpleMarkdownToHtml
   const formatMarkdown = (content: string): string => {
-    if (!content) return '';
-    
-    try {
-      // Replace ### headers with proper markdown headers
-      let formatted = content.replace(/^###\s+(.+)$/gm, '## $1');
-      
-      // Replace ** bold with proper markdown bold
-      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '**$1**');
-      
-      return formatted;
-    } catch (err) {
-      console.error('Error formatting markdown:', err);
-      return content || '';
-    }
+    return content || '';
   };
 
   // Super minimal UI with enhanced styling
@@ -159,25 +192,10 @@ const MinimalAiChat: React.FC = () => {
                     <p className="whitespace-pre-wrap">{message.text}</p>
                   ) : (
                     <div className="prose prose-sm max-w-none dark:prose-invert">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          h1: ({node, children, ...props}) => <h1 className="text-xl font-bold mt-4 mb-2" {...props}>{children}</h1>,
-                          h2: ({node, children, ...props}) => <h2 className="text-lg font-bold mt-4 mb-2 border-b pb-1" {...props}>{children}</h2>,
-                          h3: ({node, children, ...props}) => <h3 className="text-md font-bold mt-3 mb-1" {...props}>{children}</h3>,
-                          p: ({node, children, ...props}) => <p className="mb-3" {...props}>{children}</p>,
-                          ul: ({node, children, ...props}) => <ul className="list-disc pl-5 mb-3" {...props}>{children}</ul>,
-                          ol: ({node, children, ...props}) => <ol className="list-decimal pl-5 mb-3" {...props}>{children}</ol>,
-                          li: ({node, children, ...props}) => <li className="mb-1" {...props}>{children}</li>,
-                          a: ({node, children, ...props}) => <a className="text-blue-600 underline" {...props}>{children}</a>,
-                          code: ({node, inline, className, children, ...props}) => 
-                            inline 
-                              ? <code className={`bg-gray-100 px-1 py-0.5 rounded text-sm ${className || ''}`} {...props}>{children}</code>
-                              : <pre className="bg-gray-100 p-3 rounded overflow-x-auto text-sm my-3"><code className={className || ''} {...props}>{children}</code></pre>
-                        }}
-                      >
-                        {formatMarkdown(message.text)}
-                      </ReactMarkdown>
+                      <div 
+                        className="markdown-content" 
+                        dangerouslySetInnerHTML={{ __html: simpleMarkdownToHtml(message.text) }}
+                      />
                     </div>
                   )}
                 </div>
