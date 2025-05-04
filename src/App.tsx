@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
-import SimpleAiChat from './pages/SimpleAiChat';
+import MinimalAiChat from './pages/MinimalAiChat';
 import Subscription from './pages/Subscription';
 import Resources from './pages/Resources';
 import Auth from './pages/Auth';
@@ -50,7 +50,7 @@ function App() {
               path="/ai-chat" 
               element={
                 <RequireAuth>
-                  <SimpleAiChat />
+                  <MinimalAiChat />
                 </RequireAuth>
               } 
             />
