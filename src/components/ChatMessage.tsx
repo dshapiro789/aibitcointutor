@@ -22,7 +22,7 @@ interface ChatMessageProps {
   text: string;
   isUser: boolean;
   model?: string;
-  timestamp: Date;
+  timestamp?: Date;
   reactions?: MessageReaction[];
   category?: 'question' | 'explanation' | 'code' | 'error' | 'success';
   codeBlocks?: CodeBlock[];
@@ -121,7 +121,7 @@ export function ChatMessage({
           </div>
           <div className="flex items-center space-x-2">
             <Clock className="h-4 w-4" />
-            <span className="text-sm">{timestamp.toLocaleTimeString()}</span>
+            <span className="text-sm">{timestamp && timestamp.toLocaleTimeString ? timestamp.toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
           </div>
         </div>
 
