@@ -6,22 +6,77 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>AI Bitcoin Tutor</title>
     
-    <!-- Start Single Page Apps for GitHub Pages -->
+    <!-- Enhanced SPA Routing for GitHub Pages -->
     <script type="text/javascript">
-      // This script checks to see if a redirect is present in the query string
-      // and converts it back into the correct URL and adds it to the
-      // browser's history using window.history.replaceState(...),
-      // which won't cause the browser to reload the page.
-      (function(l) {
-        if (l.search[1] === '/' ) {
+      // This script ensures that SPA routing works correctly on GitHub Pages
+      (function() {
+        // First handle redirects from 404.html
+        var l = window.location;
+        if (l.search[1] === '/') {
           var decoded = l.search.slice(1).split('&').map(function(s) { 
             return s.replace(/~and~/g, '&')
           }).join('?');
           window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
+            l.pathname.slice(0, -1) + decoded + l.hash
           );
         }
-      }(window.location))
+        
+        // Get the saved redirect path from sessionStorage if it exists
+        var redirectPath = sessionStorage.getItem('redirectPath');
+        if (redirectPath) {
+          sessionStorage.removeItem('redirectPath'); // Clear it after using
+          // Only redirect if we're on the main page
+          if (l.pathname === '/' || l.pathname.endsWith('/index.html')) {
+            var newPath = redirectPath;
+            // Remove the repo name from the path if present
+            var repoName = 'aibitcointutor';
+            if (newPath.indexOf('/' + repoName + '/') === 0) {
+              newPath = newPath.replace('/' + repoName + '/', '/');
+            }
+            // Don't redirect to the root path
+            if (newPath !== '/' && newPath !== '') {
+              window.history.replaceState(null, null, newPath);
+            }
+          }
+        }
+        
+        // Safely handle dates and timestamps in the global scope
+        if (typeof Date.prototype._toLocaleString === 'undefined') {
+          Date.prototype._toLocaleString = Date.prototype.toLocaleString;
+          Date.prototype.toLocaleString = function() {
+            try {
+              return this._toLocaleString();
+            } catch (e) {
+              console.warn('Date localization error:', e);
+              return new Date().toString();
+            }
+          };
+        }
+        
+        if (typeof Date.prototype._toLocaleTimeString === 'undefined') {
+          Date.prototype._toLocaleTimeString = Date.prototype.toLocaleTimeString;
+          Date.prototype.toLocaleTimeString = function() {
+            try {
+              return this._toLocaleTimeString();
+            } catch (e) {
+              console.warn('Time localization error:', e);
+              return new Date().toString().split(' ')[4];
+            }
+          };
+        }
+        
+        if (typeof Date.prototype._toLocaleDateString === 'undefined') {
+          Date.prototype._toLocaleDateString = Date.prototype.toLocaleDateString;
+          Date.prototype.toLocaleDateString = function() {
+            try {
+              return this._toLocaleDateString();
+            } catch (e) {
+              console.warn('Date localization error:', e);
+              return new Date().toString().split(' ').slice(0, 4).join(' ');
+            }
+          };
+        }
+      })();
     </script>
     <!-- End Single Page Apps for GitHub Pages -->
   </head>
