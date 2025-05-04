@@ -14,7 +14,7 @@ import { ChatMessage } from '../components/ChatMessage';
 import { useAIChat } from '../hooks/useAIChat';
 import { useVoice } from '../hooks/useVoice';
 
-function AiChat() {
+const AiChat: React.FC = () => {
   const {
     messages,
     isProcessing,
@@ -100,7 +100,7 @@ function AiChat() {
       });
       
       await sendMessage(message, activeModel);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Chat error details:', {
         error: err,
         errorType: err?.constructor?.name,
@@ -144,40 +144,36 @@ function AiChat() {
   });
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-50 to-orange-50">
+    <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-50 to-orange-50" key="chat-container">
       {/* Header */}
       <div className="bg-white shadow-lg p-4 flex items-center justify-between">
         <div className="flex items-center">
-          <button
-            onClick={() => navigate(-1)}
-            className="mr-4 hover:bg-gray-100 p-2 rounded-lg transition-colors"
-          >
-            <ArrowRight className="h-6 w-6 text-gray-600" />
-          </button>
-          <div>
-            {!isPremium && (
-              <div className="text-sm text-gray-500">
-                {remainingMessages} messages remaining
-              </div>
-            )}
+          <div className="flex items-center p-2 rounded-lg">
+            <Bot className="h-8 w-8 text-orange-500" />
+            <h1 className="text-xl font-bold ml-2 text-gray-800">AI Bitcoin Tutor</h1>
           </div>
         </div>
-        
-
-          <div className="flex items-center space-x-2">
-            {!isPremium && (
-              <button
-                onClick={() => navigate('/subscription')}
-                className="flex items-center space-x-1 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium shadow-sm hover:shadow-md"
-              >
-                <Crown className="h-4 w-4" />
-                <span>Upgrade</span>
-              </button>
-            )}
-
+        <div className="flex items-center space-x-2">
+          <button
+            onClick={() => setShowSearch(!showSearch)}
+            className={`p-2 rounded-lg flex items-center ${
+              showSearch ? 'bg-orange-100 text-orange-700' : 'text-gray-600 hover:bg-gray-100'
+            }`}
+          >
+            <Search className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => navigate('/subscription')}
+            className="p-2 rounded-lg flex items-center text-gray-600 hover:bg-gray-100"
+          >
+            <CreditCard className="h-5 w-5" />
+          </button>
+          <div className="relative">
             <button
               onClick={() => setShowSettings(!showSettings)}
-              className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-gray-100' : 'hover:bg-gray-100'}`}
+              className={`p-2 rounded-lg flex items-center ${
+                showSettings ? 'bg-orange-100 text-orange-700' : 'text-gray-600 hover:bg-gray-100'
+              }`}
             >
               <Settings className="h-5 w-5 text-gray-600" />
             </button>
@@ -194,30 +190,26 @@ function AiChat() {
             exit={{ opacity: 0, height: 0 }}
             className="bg-white border-b shadow-sm"
           >
-            <div className="p-4 flex items-center space-x-4">
-              <div className="flex-1 relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search messages..."
-                  className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                />
-              </div>
+            <div className="p-4 max-w-5xl mx-auto">
               <div className="flex items-center space-x-2">
-                <Filter className="h-5 w-5 text-gray-400" />
+                <div className="flex-1 relative">
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="Search chat history..."
+                    className="w-full px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  />
+                  <Search className="absolute right-3 top-2.5 h-5 w-5 text-gray-400" />
+                </div>
                 <select
                   value={messageFilter}
                   onChange={(e) => setMessageFilter(e.target.value)}
-                  className="border rounded-lg px-3 py-2 focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  className="px-4 py-2 border-2 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
                 >
-                  <option value="all">All Messages</option>
-                  <option value="question">Questions</option>
-                  <option value="explanation">Explanations</option>
-                  <option value="code">Code Examples</option>
-                  <option value="error">Errors</option>
-                  <option value="success">Success</option>
+                  <option value="all">All messages</option>
+                  <option value="user">My messages</option>
+                  <option value="assistant">AI responses</option>
                 </select>
               </div>
             </div>
@@ -225,181 +217,267 @@ function AiChat() {
         )}
       </AnimatePresence>
 
-      {/* Settings Panel */}
+      {/* Settings */}
       <AnimatePresence>
         {showSettings && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="border-b bg-white overflow-y-auto"
+            className="bg-white border-b shadow-sm overflow-hidden"
           >
-            <div className="p-4 space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Model Settings</h3>
-                {isLoading && (
-                  <RefreshCw className="h-5 w-5 text-gray-400 animate-spin" />
-                )}
-              </div>
-
-              {models.map((model) => (
-                <div
-                  key={model.id}
-                  className={`bg-white p-4 rounded-xl border transition-all ${
-                    model.active ? 'border-orange-500 shadow-md' : 'border-gray-200'
-                  }`}
+            <div className="p-4 max-w-5xl mx-auto">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-lg font-semibold text-gray-800">Settings</h2>
+                <button
+                  onClick={() => setShowSettings(false)}
+                  className="p-1 hover:bg-gray-100 rounded-full"
                 >
-                  <div className="flex items-center justify-between mb-2">
-                    <div>
-                      <div className="flex items-center">
-                        <Bot className="h-5 w-5 text-gray-500 mr-2" />
-                        <h4 className="font-medium text-gray-900">{model.name}</h4>
+                  <X className="h-5 w-5 text-gray-500" />
+                </button>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div className="border rounded-xl p-4 bg-white shadow-sm">
+                  <h3 className="text-md font-semibold mb-3 flex items-center">
+                    <Bot className="h-5 w-5 text-orange-500 mr-2" />
+                    AI Models
+                  </h3>
+                  
+                  {models.map(model => (
+                    <div key={model.id} className="mb-3 pb-3 border-b last:border-b-0 last:mb-0 last:pb-0">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center">
+                          <input
+                            type="radio"
+                            id={`model-${model.id}`}
+                            name="activeModel"
+                            checked={model.active}
+                            onChange={() => {
+                              const updatedModels = models.map(m => ({
+                                ...m,
+                                active: m.id === model.id
+                              }));
+                              updateModel(model.id, { active: true });
+                            }}
+                            className="h-4 w-4 text-orange-500"
+                          />
+                          <label htmlFor={`model-${model.id}`} className="ml-2 flex items-center">
+                            <span className="font-medium text-gray-700">{model.name}</span>
+                            <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                              {model.provider}
+                            </span>
+                          </label>
+                        </div>
+                        <div>
+                          <button
+                            onClick={() => setShowAdvanced(showAdvanced === model.id ? null : model.id)}
+                            className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
+                          >
+                            {showAdvanced === model.id ? (
+                              <>
+                                <ChevronUp className="h-3 w-3 mr-1" />
+                                Hide
+                              </>
+                            ) : (
+                              <>
+                                <ChevronDown className="h-3 w-3 mr-1" />
+                                Advanced
+                              </>
+                            )}
+                          </button>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-500">{model.provider}</p>
-                    </div>
-                    <button
-                      onClick={() => updateModel(model.id, { ...model, active: true })}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        model.active
-                          ? 'bg-orange-500 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                      }`}
-                    >
-                      {model.active ? 'Active' : 'Use Model'}
-                    </button>
-                  </div>
-
-                  {/* Advanced Settings */}
-                  <div className="mt-2">
-                    <button
-                      onClick={() => setShowAdvanced(showAdvanced === model.id ? null : model.id)}
-                      className="flex items-center text-sm text-gray-500 hover:text-gray-700"
-                    >
-                      <Settings className="h-4 w-4 mr-1" />
-                      Advanced Settings
-                      {showAdvanced === model.id ? (
-                        <ChevronUp className="h-4 w-4 ml-1" />
-                      ) : (
-                        <ChevronDown className="h-4 w-4 ml-1" />
-                      )}
-                    </button>
-
-                    <AnimatePresence>
+                      
                       {showAdvanced === model.id && (
-                        <motion.div
-                          initial={{ opacity: 0, height: 0 }}
-                          animate={{ opacity: 1, height: 'auto' }}
-                          exit={{ opacity: 0, height: 0 }}
-                          className="mt-4 space-y-4"
-                        >
+                        <div className="mt-3 pl-6 space-y-2">
                           {model.apiKeyRequired && (
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                API Key
-                              </label>
-                              <div className="flex space-x-2">
+                            <div className="flex items-center">
+                              <div className="flex-1">
+                                <label className="text-xs text-gray-600 mb-1 block">API Key</label>
                                 <input
                                   type="password"
                                   value={model.apiKey || ''}
-                                  onChange={(e) => updateModel(model.id, { ...model, apiKey: e.target.value })}
-                                  className="flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                                  placeholder="Enter API key"
+                                  onChange={(e) => updateModel(model.id, { apiKey: e.target.value })}
+                                  placeholder="Enter your API key"
+                                  className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                                 />
-                                <button
-                                  onClick={() => updateModel(model.id, { ...model, apiKey: '' })}
-                                  className="p-2 text-gray-400 hover:text-gray-600"
-                                >
-                                  <Trash2 className="h-5 w-5" />
-                                </button>
                               </div>
                             </div>
                           )}
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                          <div className="grid grid-cols-2 gap-2">
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Temperature
-                              </label>
+                              <label className="text-xs text-gray-600 mb-1 block">Temperature</label>
                               <input
                                 type="number"
                                 min="0"
                                 max="2"
                                 step="0.1"
-                                value={model.temperature}
-                                onChange={(e) => updateModel(model.id, { ...model, temperature: parseFloat(e.target.value) })}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                value={model.temperature || 0.7}
+                                onChange={(e) => updateModel(model.id, { temperature: parseFloat(e.target.value) })}
+                                className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                               />
                             </div>
                             <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Max Tokens
-                              </label>
+                              <label className="text-xs text-gray-600 mb-1 block">Max Tokens</label>
                               <input
                                 type="number"
-                                min="1"
-                                value={model.maxTokens}
-                                onChange={(e) => updateModel(model.id, { ...model, maxTokens: parseInt(e.target.value) })}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="block text-sm font-medium text-gray-700 mb-1">
-                                Context Length
-                              </label>
-                              <input
-                                type="number"
-                                min="1"
-                                value={model.contextLength}
-                                onChange={(e) => updateModel(model.id, { ...model, contextLength: parseInt(e.target.value) })}
-                                className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                                min="100"
+                                max="32000"
+                                step="100"
+                                value={model.maxTokens || 2000}
+                                onChange={(e) => updateModel(model.id, { maxTokens: parseInt(e.target.value) })}
+                                className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
                               />
                             </div>
                           </div>
 
                           {!model.apiKeyRequired && (
                             <button
-                              onClick={() => removeModel(model.id)}
+                              onClick={() => {
+                                if (typeof removeModel === 'function') {
+                                  removeModel(model.id);
+                                }
+                              }}
                               className="flex items-center text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
                               Remove Model
                             </button>
                           )}
-                        </motion.div>
+                        </div>
                       )}
-                    </AnimatePresence>
+                    </div>
+                  ))}
+                  
+                </div>
+                
+                <div className="border rounded-xl p-4 bg-white shadow-sm">
+                  <h3 className="text-md font-semibold mb-3 flex items-center">
+                    <CreditCard className="h-5 w-5 text-orange-500 mr-2" />
+                    Account Status
+                  </h3>
+                  
+                  <div className="p-3 bg-gray-50 rounded-lg mb-4">
+                    {isPremium ? (
+                      <div className="flex items-center text-green-700">
+                        <Crown className="h-5 w-5 mr-2 text-yellow-500" />
+                        <div>
+                          <div className="font-medium">Premium Subscription</div>
+                          <div className="text-sm text-gray-600">Unlimited messages and priority support</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center text-gray-700">
+                        <div>
+                          <div className="font-medium">Free Plan</div>
+                          <div className="text-sm text-gray-600">{remainingMessages} messages remaining this hour</div>
+                          <button
+                            onClick={() => navigate('/subscription')}
+                            className="mt-2 px-3 py-1 bg-orange-500 text-white text-sm rounded-lg shadow-sm hover:bg-orange-600 transition-colors flex items-center"
+                          >
+                            <CreditCard className="h-4 w-4 mr-1" />
+                            Upgrade Now
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => exportChatHistory()}
+                      className="w-full py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-700"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Chat History
+                    </button>
                   </div>
                 </div>
-              ))}
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-6 space-y-6">
-        {filteredMessages.map((message) => (
-          <ChatMessage
-            key={message.id}
-            {...message}
-            remainingMessages={message.isUser ? remainingMessages : undefined}
-            isPremium={isPremium}
-            reactions={[]}
-            onQuickReply={handleQuickReply}
-          />
-        ))}
-
-        {/* Thinking Indicator */}
+      <div className="flex-1 overflow-y-auto p-4" style={{ paddingBottom: '150px' }}>
+        {filteredMessages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center p-6">
+            <Brain className="h-16 w-16 text-orange-300 mb-4" />
+            <h2 className="text-2xl font-bold text-gray-700 mb-2">Welcome to AI Bitcoin Tutor</h2>
+            <p className="text-gray-500 max-w-lg mb-6">
+              I'm your personal AI tutor for learning about Bitcoin. Ask me anything from basic concepts to advanced technical details!
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg w-full">
+              <button
+                onClick={() => handleQuickReply("What is Bitcoin?")}
+                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+              >
+                <div className="font-medium">What is Bitcoin?</div>
+                <div className="text-sm text-gray-500">Learn the basics</div>
+              </button>
+              <button
+                onClick={() => handleQuickReply("How does blockchain work?")}
+                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+              >
+                <div className="font-medium">How does blockchain work?</div>
+                <div className="text-sm text-gray-500">Technical foundations</div>
+              </button>
+              <button
+                onClick={() => handleQuickReply("What's the difference between Bitcoin and other cryptocurrencies?")}
+                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+              >
+                <div className="font-medium">Bitcoin vs others</div>
+                <div className="text-sm text-gray-500">Compare cryptocurrencies</div>
+              </button>
+              <button
+                onClick={() => handleQuickReply("How can I buy Bitcoin safely?")}
+                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+              >
+                <div className="font-medium">How to buy Bitcoin</div>
+                <div className="text-sm text-gray-500">Safe purchasing guide</div>
+              </button>
+            </div>
+          </div>
+        ) : (
+          filteredMessages.map((message) => (
+            <ChatMessage
+              key={message.id}
+              message={message}
+              onAddReaction={addReaction}
+              onSpeakMessage={() => {
+                speak(message.text);
+              }}
+              isSpeaking={isSpeaking}
+              onStopSpeaking={stopSpeaking}
+              isPremiumUser={isPremium}
+            />
+          ))
+        )}
+        
         {isProcessing && (
           <motion.div
-            initial={{ opacity: 0, y: 20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="flex justify-start"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="my-4"
           >
-            <div className="bg-white text-gray-800 p-6 rounded-2xl shadow-lg max-w-[85%] space-y-3">
-              <div className="flex items-center text-gray-600 space-x-2">
-                <Brain className="h-5 w-5 text-orange-500 animate-pulse" />
-                <span className="text-lg font-medium">Thinking...</span>
+            <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm max-w-[85%] ms-auto">
+              <div className="flex items-center space-x-4 mb-2">
+                <div className="flex-shrink-0">
+                  <div className="h-8 w-8 bg-orange-500 text-white rounded-full flex items-center justify-center">
+                    <Bot className="h-5 w-5" />
+                  </div>
+                </div>
+                <div>
+                  <div className="font-medium">AI Assistant</div>
+                  <div className="text-sm text-gray-500">Thinking...</div>
+                </div>
+              </div>
+              <div className="flex space-x-1 mt-1">
+                <div className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
               {currentThoughts && (
                 <motion.div
@@ -506,6 +584,6 @@ function AiChat() {
       </div>
     </div>
   );
-}
+};
 
 export default AiChat;
