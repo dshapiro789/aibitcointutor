@@ -9,6 +9,12 @@ const apiKey = import.meta.env.VITE_OPENROUTER_API_KEY || '';
 console.log('API Key availability check:', 
   apiKey ? `Key present (length: ${apiKey.length})` : 'No API key found');
 
+// Throw an error if no API key is found
+if (!apiKey) {
+  console.error('OpenRouter API key is missing. Please check your environment variables.');
+  throw new Error('OpenRouter API key is not configured. Please check your environment variables.');
+}
+
 // Configure OpenAI with valid API key from environment variables
 export const openai = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
@@ -174,7 +180,25 @@ For technical questions, break down your answers into clear steps and explain un
 
       // Parse the response
       const data = await response.json();
-      return data.choices[0]?.message?.content || 'No response received';
+      
+      // Log the response structure for debugging
+      console.log('OpenRouter response structure:', {
+        hasChoices: Array.isArray(data.choices),
+        firstChoice: data.choices?.[0] ? {
+          hasMessage: !!data.choices[0].message,
+          hasContent: !!data.choices[0].message?.content
+        } : null
+      });
+
+      if (!data.choices?.length) {
+        throw new Error('Invalid response from OpenRouter: No choices returned');
+      }
+
+      if (!data.choices[0]?.message?.content) {
+        throw new Error('Invalid response from OpenRouter: No message content returned');
+      }
+
+      return data.choices[0].message.content;
       
     } catch (error) {
       // Log detailed error information

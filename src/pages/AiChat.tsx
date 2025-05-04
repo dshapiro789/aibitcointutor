@@ -56,7 +56,7 @@ function AiChat() {
   } = useVoice({
     onResult: (transcript) => {
       setInput(transcript);
-      handleSubmit(new Event('submit') as any);
+      handleSubmit({ preventDefault: () => {} } as React.FormEvent);
     },
     onError: (error) => {
       console.error('Voice error:', error);
@@ -122,7 +122,7 @@ function AiChat() {
 
   const handleQuickReply = (reply: string) => {
     setInput(reply);
-    handleSubmit(new Event('submit') as any);
+    handleSubmit({ preventDefault: () => {} } as React.FormEvent);
   };
 
   const handleVoiceToggle = () => {
@@ -155,10 +155,6 @@ function AiChat() {
             <ArrowRight className="h-6 w-6 text-gray-600" />
           </button>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
-              <Bot className="h-6 w-6 mr-2 text-orange-500" />
-              AI Bitcoin Tutor
-            </h1>
             {!isPremium && (
               <div className="text-sm text-gray-500">
                 {remainingMessages} messages remaining
@@ -167,30 +163,30 @@ function AiChat() {
           </div>
         </div>
         
-        <div className="flex items-center space-x-3">
-          {!isPremium && (
-            <button
-              onClick={() => navigate('/subscription')}
-              className="flex items-center space-x-2 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium"
-            >
-              <Crown className="h-4 w-4" />
-              <span>Upgrade</span>
-            </button>
-          )}
 
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className={`p-2 rounded-lg transition-colors ${
-              showSettings ? 'bg-gray-100' : 'hover:bg-gray-100'
-            }`}
-          >
-            <Settings className="h-5 w-5 text-gray-600" />
-          </button>
+          <div className="flex items-center space-x-2">
+            {!isPremium && (
+              <button
+                onClick={() => navigate('/subscription')}
+                className="flex items-center space-x-1 px-3 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors text-sm font-medium shadow-sm hover:shadow-md"
+              >
+                <Crown className="h-4 w-4" />
+                <span>Upgrade</span>
+              </button>
+            )}
+
+            <button
+              onClick={() => setShowSettings(!showSettings)}
+              className={`p-2 rounded-lg transition-colors ${showSettings ? 'bg-gray-100' : 'hover:bg-gray-100'}`}
+            >
+              <Settings className="h-5 w-5 text-gray-600" />
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {showSearch && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -362,7 +358,7 @@ function AiChat() {
 
                           {!model.apiKeyRequired && (
                             <button
-                              onClick={() => removeModel(model.id)}
+                              onClick={() => removeModel(model)}
                               className="flex items-center text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
@@ -388,7 +384,7 @@ function AiChat() {
             {...message}
             remainingMessages={message.isUser ? remainingMessages : undefined}
             isPremium={isPremium}
-            onReaction={addReaction}
+            reactions={[]}
             onQuickReply={handleQuickReply}
           />
         ))}
