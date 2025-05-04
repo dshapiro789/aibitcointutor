@@ -22,9 +22,11 @@
     /* Type Checking */
     "skipLibCheck": true,
     "noImplicitAny": false,
-    "types": ["vite/client"]
+    "types": ["vite/client", "three"],
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true
   },
-  "include": ["src"],
-  "exclude": ["node_modules"],
+  "include": ["src", "node_modules/@types/three"],
+  "exclude": ["node_modules/@types/three/examples"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
