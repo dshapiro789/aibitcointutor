@@ -93,7 +93,6 @@ const MinimalAiChat: React.FC = () => {
   // Super minimal UI with no complex components
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-2xl font-bold text-center mb-6">AI Bitcoin Tutor</h1>
       
       <div className="mb-4">
         {messages.length === 0 ? (
