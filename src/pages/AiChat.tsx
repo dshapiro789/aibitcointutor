@@ -144,7 +144,7 @@ function AiChat() {
   });
 
   return (
-    <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-50 to-orange-50">
+    <div className="fixed inset-0 flex flex-col bg-gradient-to-br from-gray-50 to-orange-50" key="chat-container">
       {/* Header */}
       <div className="bg-white shadow-lg p-4 flex items-center justify-between">
         <div className="flex items-center">
@@ -186,7 +186,7 @@ function AiChat() {
       </div>
 
       {/* Search Bar */}
-      <AnimatePresence mode="wait">
+      <AnimatePresence mode="wait" initial={false}>
         {showSearch && (
           <motion.div
             initial={{ opacity: 0, height: 0 }}
@@ -358,7 +358,7 @@ function AiChat() {
 
                           {!model.apiKeyRequired && (
                             <button
-                              onClick={() => removeModel(model)}
+                              onClick={() => removeModel(model.id)}
                               className="flex items-center text-red-600 hover:text-red-700"
                             >
                               <Trash2 className="h-4 w-4 mr-1" />
@@ -507,5 +507,6 @@ function AiChat() {
     </div>
   );
 }
+
 
 export default AiChat;
