@@ -6,9 +6,23 @@ import remarkGfm from 'remark-gfm';
 
 // A minimal component with no dependencies on complex libraries
 const MinimalAiChat: React.FC = () => {
+  const {
+    messages,
+    isProcessing,
+    error: chatError,
+    models,
+    sendMessage,
+    updateModel,
+    remainingMessages = 0,
+    isPremium = false,
+    currentThoughts,
+    addReaction,
+  } = useAIChat() || {};
+  
+  // Default values and fallbacks
+  const maxMessagesPerHour = 20; // Default value if not provided from environment
   const [input, setInput] = useState('');
-  const [messages, setMessages] = useState<Array<{id: string, text: string, isUser: boolean}>>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  // Use the error state from the hook but allow local overrides
   const [error, setError] = useState<string | null>(null);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -21,90 +35,52 @@ const MinimalAiChat: React.FC = () => {
   }, [messages]);
 
   // Very simplified send message function
+  // Handle error propagation
+  useEffect(() => {
+    if (chatError) {
+      setError(chatError);
+    }
+  }, [chatError]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!input.trim() || isLoading) return;
+    if (!input.trim() || isProcessing) return;
 
     try {
-      // Add user message to the list
-      const userMessage = {
-        id: Date.now().toString(),
-        text: input,
-        isUser: true
-      };
-      
-      setMessages(prev => [...prev, userMessage]);
       setInput('');
-      setIsLoading(true);
       setError(null);
-      
-      // Call OpenAI API directly - basic error handling
-      let response;
-      try {
-        // Prepare messages with proper typing
-        const systemMessage: ChatCompletionMessageParam = {
-          role: "system",
-          content: "You are an AI Bitcoin expert tutor. Provide accurate, educational information about Bitcoin and cryptocurrency."
-        };
-        
-        // Convert chat history to properly typed messages
-        const historyMessages: ChatCompletionMessageParam[] = messages.map(msg => ({
-          role: msg.isUser ? "user" : "assistant",
-          content: msg.text
-        }));
-        
-        // Current user message
-        const userMessage: ChatCompletionMessageParam = {
-          role: "user",
-          content: input
-        };
-        
-        // Combine all messages
-        const allMessages: ChatCompletionMessageParam[] = [
-          systemMessage,
-          ...historyMessages,
-          userMessage
-        ];
-        
-        response = await openai.chat.completions.create({
-          model: "perplexity/sonar",
-          messages: allMessages,
-          temperature: 0.7,
-          max_tokens: 1024
-        });
-      } catch (err: any) {
-        console.error('OpenAI API Error:', err);
-        throw new Error(`API Error: ${err.message || JSON.stringify(err)}`);
+
+      // Find active model
+      const activeModel = models?.find(m => m.active);
+      if (!activeModel) {
+        setError('Please select an AI model');
+        return;
       }
       
-      // Add AI response to messages
-      if (response?.choices?.[0]?.message?.content) {
-        const aiMessage = {
-          id: (Date.now() + 1).toString(),
-          text: response.choices[0].message.content,
-          isUser: false
-        };
-        setMessages(prev => [...prev, aiMessage]);
-      } else {
-        throw new Error('No response from AI service');
-      }
+      // Use the existing sendMessage function from useAIChat
+      await sendMessage(input, activeModel);
     } catch (err: any) {
       console.error('Chat error:', err);
       setError(err instanceof Error ? err.message : 'Error sending message');
-    } finally {
-      setIsLoading(false);
     }
   };
 
   // Format markdown content to replace ### and ** with proper headings and formatting
   const formatMarkdown = (content: string): string => {
-    // Replace ### headers with proper markdown headers
-    let formatted = content.replace(/^###\s+(.+)$/gm, '## $1');
+    if (!content) return '';
     
-    // Replace ** bold with proper markdown bold
-    formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '**$1**');
-    
-    return formatted;
+    try {
+      // Replace ### headers with proper markdown headers
+      let formatted = content.replace(/^###\s+(.+)$/gm, '## $1');
+      
+      // Replace ** bold with proper markdown bold
+      formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '**$1**');
+      
+      return formatted;
+    } catch (err) {
+      console.error('Error formatting markdown:', err);
+      return content || '';
+    }
   };
 
   // Super minimal UI with enhanced styling
@@ -139,18 +115,18 @@ const MinimalAiChat: React.FC = () => {
                       <ReactMarkdown 
                         remarkPlugins={[remarkGfm]}
                         components={{
-                          h1: ({node, ...props}) => <h1 className="text-xl font-bold mt-4 mb-2" {...props} />,
-                          h2: ({node, ...props}) => <h2 className="text-lg font-bold mt-4 mb-2 border-b pb-1" {...props} />,
-                          h3: ({node, ...props}) => <h3 className="text-md font-bold mt-3 mb-1" {...props} />,
-                          p: ({node, ...props}) => <p className="mb-3" {...props} />,
-                          ul: ({node, ...props}) => <ul className="list-disc pl-5 mb-3" {...props} />,
-                          ol: ({node, ...props}) => <ol className="list-decimal pl-5 mb-3" {...props} />,
-                          li: ({node, ...props}) => <li className="mb-1" {...props} />,
-                          a: ({node, ...props}) => <a className="text-blue-600 underline" {...props} />,
-                          code: ({node, inline, ...props}) => 
+                          h1: ({node, children, ...props}) => <h1 className="text-xl font-bold mt-4 mb-2" {...props}>{children}</h1>,
+                          h2: ({node, children, ...props}) => <h2 className="text-lg font-bold mt-4 mb-2 border-b pb-1" {...props}>{children}</h2>,
+                          h3: ({node, children, ...props}) => <h3 className="text-md font-bold mt-3 mb-1" {...props}>{children}</h3>,
+                          p: ({node, children, ...props}) => <p className="mb-3" {...props}>{children}</p>,
+                          ul: ({node, children, ...props}) => <ul className="list-disc pl-5 mb-3" {...props}>{children}</ul>,
+                          ol: ({node, children, ...props}) => <ol className="list-decimal pl-5 mb-3" {...props}>{children}</ol>,
+                          li: ({node, children, ...props}) => <li className="mb-1" {...props}>{children}</li>,
+                          a: ({node, children, ...props}) => <a className="text-blue-600 underline" {...props}>{children}</a>,
+                          code: ({node, inline, className, children, ...props}) => 
                             inline 
-                              ? <code className="bg-gray-100 px-1 py-0.5 rounded text-sm" {...props} />
-                              : <pre className="bg-gray-100 p-3 rounded overflow-x-auto text-sm my-3"><code {...props} /></pre>
+                              ? <code className={`bg-gray-100 px-1 py-0.5 rounded text-sm ${className || ''}`} {...props}>{children}</code>
+                              : <pre className="bg-gray-100 p-3 rounded overflow-x-auto text-sm my-3"><code className={className || ''} {...props}>{children}</code></pre>
                         }}
                       >
                         {formatMarkdown(message.text)}
@@ -160,7 +136,7 @@ const MinimalAiChat: React.FC = () => {
                 </div>
               </div>
             ))}
-            {isLoading && (
+            {isProcessing && (
               <div className="flex justify-start">
                 <div className="max-w-[80%] bg-white border border-gray-200 shadow-sm rounded-2xl p-5">
                   <div className="flex space-x-2 items-center">
@@ -184,13 +160,13 @@ const MinimalAiChat: React.FC = () => {
       )}
       
       <div className="sticky bottom-0 p-4 bg-gray-50 border-t">
-        {!isPremium && (
+        {isPremium === false && remainingMessages !== undefined && (
           <div className="flex justify-center items-center mb-2 text-sm">
             <div className="flex items-center bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-xs font-medium">
               <svg xmlns="http://www.w3.org/2000/svg" className="h-3.5 w-3.5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              <span>{remainingMessages} of {maxMessagesPerHour} messages remaining today</span>
+              <span>{remainingMessages || 0} of {maxMessagesPerHour} messages remaining today</span>
             </div>
           </div>
         )}
@@ -205,10 +181,10 @@ const MinimalAiChat: React.FC = () => {
           />
           <button
             type="submit"
-            disabled={isLoading || !input.trim()}
+            disabled={isProcessing || !input.trim()}
             className="px-5 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? 'Sending...' : 'Send'}
+            {isProcessing ? 'Sending...' : 'Send'}
           </button>
         </form>
       </div>
