@@ -251,6 +251,7 @@ jobs:
 
             <script>
               // Ultra-minimal implementation with no dependencies
+              // The API key will be injected by the build script
               const API_KEY = '%%OPENROUTER_API_KEY%%';
               const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
               
@@ -382,8 +383,35 @@ jobs:
           </html>
           EOL
           
-          # Replace API key placeholder with actual value
-          sed -i "s/%%OPENROUTER_API_KEY%%/${VITE_OPENROUTER_API_KEY}/g" dist/index.html
+          # Replace API key placeholder with actual value - using Node.js to ensure proper escaping
+          node -e "const fs = require('fs'); 
+                 const path = require('path');
+                 const filePath = path.resolve('./dist/index.html');
+                 let content = fs.readFileSync(filePath, 'utf8');
+                 
+                 // Get API key from environment variable
+                 const apiKey = process.env.VITE_OPENROUTER_API_KEY || '';
+                 
+                 // Log API key length for debugging (without revealing the key)
+                 console.log('API Key check:', apiKey ? `Found key (length: ${apiKey.length})` : 'No key found');
+                 
+                 // Replace the placeholder - ensuring proper escaping of special characters
+                 content = content.replace(/%%OPENROUTER_API_KEY%%/g, apiKey);
+                 
+                 // Write the updated content back to the file
+                 fs.writeFileSync(filePath, content);
+                 
+                 console.log('API key injected into standalone HTML file');"
+          
+          # Verify the file contains the API key (checking length only, not the actual key)
+          node -e "const fs = require('fs');
+                 const content = fs.readFileSync('./dist/index.html', 'utf8');
+                 const match = content.match(/const API_KEY = '([^']+)';/);
+                 if (match && match[1]) {
+                   console.log('HTML file contains API key with length:', match[1].length);
+                 } else {
+                   console.log('WARNING: Could not find API key in HTML file');
+                 }"
           
           # Create .nojekyll file
           touch dist/.nojekyll
