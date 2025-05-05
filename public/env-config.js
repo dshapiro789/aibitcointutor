@@ -4,6 +4,8 @@ window.ENV_VARS = {
   // These will be populated during build by deploy.yml
   OPENROUTER_API_KEY: '%%OPENROUTER_API_KEY%%',
   OPENROUTER_ENDPOINT: '%%OPENROUTER_ENDPOINT%%',
+  SUPABASE_URL: '%%SUPABASE_URL%%',
+  SUPABASE_ANON_KEY: '%%SUPABASE_ANON_KEY%%',
   // Add other environment variables as needed
 };
 

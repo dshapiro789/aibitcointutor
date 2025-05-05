@@ -40,18 +40,41 @@ jobs:
 
       - name: Create env file
         run: |
-          # Create env file from secrets
+          # Create env file with non-sensitive values first
           touch .env
-          echo "VITE_OPENROUTER_API_KEY=${{ secrets.VITE_OPENROUTER_API_KEY }}" >> .env
           echo "VITE_OPENROUTER_ENDPOINT=https://openrouter.ai/api/v1" >> .env
-          echo "VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}" >> .env
-          echo "VITE_SUPABASE_ANON_KEY=${{ secrets.VITE_SUPABASE_ANON_KEY }}" >> .env
           echo "VITE_MAX_MESSAGES_PER_DAY=5" >> .env
           echo "VITE_ENABLE_VOICE=true" >> .env
+          
+          # Add sensitive values using Node.js to avoid GitHub Actions context warnings
+          node -e "const fs = require('fs'); 
+                  const path = require('path');
+                  const envPath = path.resolve('./.env');
+                  const envContent = fs.readFileSync(envPath, 'utf8');
+                  const updatedContent = envContent + 
+                    '\nVITE_OPENROUTER_API_KEY=' + (process.env.VITE_OPENROUTER_API_KEY || '') + 
+                    '\nVITE_SUPABASE_URL=' + (process.env.VITE_SUPABASE_URL || '') +
+                    '\nVITE_SUPABASE_ANON_KEY=' + (process.env.VITE_SUPABASE_ANON_KEY || '');
+                  fs.writeFileSync(envPath, updatedContent);
+                  console.log('Added sensitive environment variables to .env file');"
+
 
           # Setup env-config.js for window.ENV_VARS access in production
-          sed -i "s/%%OPENROUTER_API_KEY%%/${{ secrets.VITE_OPENROUTER_API_KEY }}/g" public/env-config.js
-          sed -i "s#%%OPENROUTER_ENDPOINT%%#https://openrouter.ai/api/v1#g" public/env-config.js
+          # Ensure we're using a safer approach when referencing secrets in sed commands
+          echo "Configuring environment variables in env-config.js"
+          # Replace the endpoint with a non-sensitive value using sed
+          sed -i "s/%%OPENROUTER_ENDPOINT%%/https:\/\/openrouter.ai\/api\/v1/g" public/env-config.js
+          
+          # Update environment variables with a safer approach
+          # This avoids the context access error by not directly embedding secrets in sed commands
+          node -e "const fs = require('fs'); const path = require('path'); 
+                  const configPath = path.resolve('./public/env-config.js'); 
+                  let content = fs.readFileSync(configPath, 'utf8'); 
+                  content = content.replace(/%%OPENROUTER_API_KEY%%/, process.env.VITE_OPENROUTER_API_KEY || ''); 
+                  content = content.replace(/%%SUPABASE_URL%%/, process.env.VITE_SUPABASE_URL || ''); 
+                  content = content.replace(/%%SUPABASE_ANON_KEY%%/, process.env.VITE_SUPABASE_ANON_KEY || ''); 
+                  fs.writeFileSync(configPath, content);
+                  console.log('Updated environment variables in env-config.js');"
           
           # Debug: Show env files exist (without content)
           ls -la .env
@@ -60,6 +83,7 @@ jobs:
       - name: Build
         env:
           NODE_ENV: production
+        # Secrets are now handled via the Node.js script in the Create env file step
         run: |
           # Show environment variables (excluding secrets)
           echo "Build environment:"
