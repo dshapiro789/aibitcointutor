@@ -9,48 +9,13 @@ window.ENV_VARS = {
   // Add other environment variables as needed
 };
 
-// CRITICAL PRODUCTION FIX: Prevent date-related errors
-// This code runs before any React code and fixes the Date prototype
-try {
-  console.log('Installing global date protection patches');
-  
-  // Store original methods
-  const originalToLocaleTimeString = Date.prototype.toLocaleTimeString;
-  const originalToLocaleDateString = Date.prototype.toLocaleDateString;
-  
-  // Safe replacement for toLocaleTimeString
-  Date.prototype.toLocaleTimeString = function() {
-    try {
-      return originalToLocaleTimeString.apply(this, arguments);
-    } catch (e) {
-      console.warn('Prevented a toLocaleTimeString error', e);
-      return '12:00 PM';
-    }
-  };
-  
-  // Safe replacement for toLocaleDateString
-  Date.prototype.toLocaleDateString = function() {
-    try {
-      return originalToLocaleDateString.apply(this, arguments);
-    } catch (e) {
-      console.warn('Prevented a toLocaleDateString error', e);
-      return '2025-01-01';
-    }
-  };
-  
-  // Global error handler for date-related errors
-  window.addEventListener('error', function(event) {
-    if (event && event.error && 
-        (event.error.toString().includes('toLocaleTimeString') || 
-         event.error.toString().includes('Date'))) {
-      console.warn('Caught and prevented Date-related error:', event.error);
-      event.preventDefault();
-      return true;
-    }
-    return false;
-  });
-  
-  console.log('Date protection installed successfully');
-} catch (e) {
-  console.error('Failed to install date protection:', e);
-}
+// NO DATE OPERATIONS: We've completely removed all date-related methods
+// to avoid any possible errors in production
+console.log('Environment variables loaded successfully');
+
+// Add a global error handler to catch any unexpected errors
+window.addEventListener('error', function(event) {
+  console.warn('Caught error:', event.error);
+  // Don't prevent default for most errors
+  return false;
+});

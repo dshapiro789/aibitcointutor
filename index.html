@@ -40,42 +40,8 @@
           }
         }
         
-        // Safely handle dates and timestamps in the global scope
-        if (typeof Date.prototype._toLocaleString === 'undefined') {
-          Date.prototype._toLocaleString = Date.prototype.toLocaleString;
-          Date.prototype.toLocaleString = function() {
-            try {
-              return this._toLocaleString();
-            } catch (e) {
-              console.warn('Date localization error:', e);
-              return new Date().toString();
-            }
-          };
-        }
-        
-        if (typeof Date.prototype._toLocaleTimeString === 'undefined') {
-          Date.prototype._toLocaleTimeString = Date.prototype.toLocaleTimeString;
-          Date.prototype.toLocaleTimeString = function() {
-            try {
-              return this._toLocaleTimeString();
-            } catch (e) {
-              console.warn('Time localization error:', e);
-              return new Date().toString().split(' ')[4];
-            }
-          };
-        }
-        
-        if (typeof Date.prototype._toLocaleDateString === 'undefined') {
-          Date.prototype._toLocaleDateString = Date.prototype.toLocaleDateString;
-          Date.prototype.toLocaleDateString = function() {
-            try {
-              return this._toLocaleDateString();
-            } catch (e) {
-              console.warn('Date localization error:', e);
-              return new Date().toString().split(' ').slice(0, 4).join(' ');
-            }
-          };
-        }
+        // NO DATE HANDLING: We've removed all date-related methods to avoid errors
+        console.log('Page loaded without date handling functions');
       })();
     </script>
     <!-- End Single Page Apps for GitHub Pages -->
