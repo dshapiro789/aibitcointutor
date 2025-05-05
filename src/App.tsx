@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import MinimalAiChat from './pages/MinimalAiChat';
+import UltraMinimalAiChat from './pages/UltraMinimalAiChat';
 import Subscription from './pages/Subscription';
 import Resources from './pages/Resources';
 import Auth from './pages/Auth';
@@ -12,6 +13,7 @@ import { ScrollToTop } from './components/ScrollToTop';
 import { useAuthStore } from './store/authStore';
 import { useSubscriptionStore } from './store/subscriptionStore';
 import { RequireAuth } from './components/RequireAuth';
+import ErrorBoundary from './components/ErrorBoundary';
 import { RequireSubscription } from './components/RequireSubscription';
 
 
@@ -50,7 +52,9 @@ function App() {
               path="/ai-chat" 
               element={
                 <RequireAuth>
-                  <MinimalAiChat />
+                  <ErrorBoundary fallback={<UltraMinimalAiChat />}>
+                    <MinimalAiChat />
+                  </ErrorBoundary>
                 </RequireAuth>
               } 
             />
