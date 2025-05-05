@@ -2,16 +2,150 @@
 const fs = require('fs');
 const path = require('path');
 
-console.log('Applying production build patch...');
+try {
+  // Create dist directory if it doesn't exist
+  const distDir = path.resolve(__dirname, 'dist');
+  if (!fs.existsSync(distDir)) {
+    fs.mkdirSync(distDir, { recursive: true });
+  }
 
-// Create production index.html that uses a direct script reference 
-// instead of going through the React build system
-const productionHtml = `<!DOCTYPE html>
+  // Create a completely self-contained HTML file
+  const html = `<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bitcoin AI Tutor</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Bitcoin Tutor</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background-color: #f9f9f9;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-container {
+      max-width: 1024px;
+      margin: 0 auto;
+      padding: 1rem;
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      overflow-y: auto;
+      max-height: calc(100vh - 180px);
+      border-radius: 0.5rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .message {
+      border-radius: 0.5rem;
+      padding: 1rem;
+      max-width: 90%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .user-message {
+      align-self: flex-end;
+      background: linear-gradient(to bottom right, #f97316, #ea580c);
+      color: white;
+      margin-left: auto;
+    }
+    .ai-message {
+      align-self: flex-start;
+      background: white;
+      border: 1px solid #e5e7eb;
+    }
+    .input-container {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+    input {
+      flex-grow: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      background: #f97316;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background: #ea580c;
+    }
+    button:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      color: #f97316;
+    }
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    code {
+      font-family: monospace;
+    }
+    p {
+      margin-bottom: 0.5rem;
+    }
+    .loading {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <h1>AI Bitcoin Tutor</h1>
+    </div>
+    <div id="chat-container" class="chat-container">
+      <div class="message ai-message">
+        <p>Hello! I'm your AI Bitcoin tutor. How can I help you learn about Bitcoin today?</p>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
     <style>
       /* Basic styles for the fallback app */
@@ -192,7 +326,15 @@ const productionHtml = `<!DOCTYPE html>
   </body>
 </html>`;
 
-// Write the production HTML directly to the project
-fs.writeFileSync(path.join(__dirname, 'index.html'), productionHtml);
+  // Write the HTML file to the dist directory
+  fs.writeFileSync(path.join(distDir, 'index.html'), html);
 
-console.log('Production build patch applied successfully!');
+  // Create .nojekyll file to bypass GitHub Pages Jekyll processing
+  fs.writeFileSync(path.join(distDir, '.nojekyll'), '');
+
+  console.log('Created self-contained HTML file in dist/index.html');
+  console.log('Production build completed successfully');
+} catch (error) {
+  console.error('Error generating production build:', error);
+  process.exit(1);
+}
