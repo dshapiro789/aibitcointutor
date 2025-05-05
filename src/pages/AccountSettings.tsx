@@ -96,7 +96,21 @@ function AccountSettings() {
 
                   <div className="flex items-center text-sm text-gray-600">
                     <Calendar className="h-4 w-4 mr-2" />
-                    Next billing date: {subscription?.endDate ? new Date(subscription.endDate).toLocaleDateString() : 'Not available'}
+                    Next billing date: {(() => {
+                      // Safely format date with error handling
+                      try {
+                        if (subscription?.endDate) {
+                          const endDate = new Date(subscription.endDate);
+                          // Verify it's a valid date before formatting
+                          if (!isNaN(endDate.getTime())) {
+                            return endDate.toLocaleDateString();
+                          }
+                        }
+                        return 'Not available';
+                      } catch (e) {
+                        return 'Not available';
+                      }
+                    })()}
                   </div>
 
                   <div className="pt-4 border-t">

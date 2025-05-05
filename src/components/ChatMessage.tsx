@@ -30,6 +30,10 @@ interface ChatMessageProps {
   remainingMessages?: number;
   isPremium?: boolean;
   onQuickReply: (reply: string) => void;
+  onAddReaction?: () => void;
+  onSpeakMessage?: () => void;
+  isSpeaking?: boolean;
+  onStopSpeaking?: () => void;
 }
 
 const categoryIcons = {
@@ -121,7 +125,22 @@ export function ChatMessage({
           </div>
           <div className="flex items-center space-x-2">
             <Clock className="h-4 w-4" />
-            <span className="text-sm">{timestamp && timestamp.toLocaleTimeString ? timestamp.toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
+            <span className="text-sm">
+              {(() => {
+                // Safely format time with extensive error checking
+                try {
+                  if (timestamp instanceof Date && typeof timestamp.toLocaleTimeString === 'function') {
+                    return timestamp.toLocaleTimeString();
+                  } else {
+                    // Fallback to current time
+                    return new Date().toLocaleTimeString();
+                  }
+                } catch (e) {
+                  // Ultimate fallback if any date operations fail
+                  return 'Just now';
+                }
+              })()}
+            </span>
           </div>
         </div>
 
