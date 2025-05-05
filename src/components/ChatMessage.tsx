@@ -22,13 +22,10 @@ interface ChatMessageProps {
   text: string;
   isUser: boolean;
   model?: string;
-  timestamp?: Date;
   reactions?: MessageReaction[];
   category?: 'question' | 'explanation' | 'code' | 'error' | 'success';
   codeBlocks?: CodeBlock[];
   quickReplies?: string[];
-  remainingMessages?: number;
-  isPremium?: boolean;
   onQuickReply: (reply: string) => void;
   onAddReaction?: () => void;
   onSpeakMessage?: () => void;
@@ -49,13 +46,10 @@ export function ChatMessage({
   text,
   isUser,
   model,
-  timestamp,
   reactions = [],
   category,
   codeBlocks = [],
   quickReplies = [],
-  remainingMessages,
-  isPremium,
   onQuickReply
 }: ChatMessageProps) {
   const [copied, setCopied] = useState(false);
@@ -123,37 +117,7 @@ export function ChatMessage({
               </>
             )}
           </div>
-          <div className="flex items-center space-x-2">
-            <Clock className="h-4 w-4" />
-            <span className="text-sm">
-              {/* This solution completely eliminates any date handling errors */}
-              {(() => {
-                // Static value to prevent any possible date errors in production
-                if (process.env.NODE_ENV === 'production') {
-                  return 'Just now';
-                }
-                
-                // Only do date formatting in development for debugging
-                try {
-                  // Extra-safe check that timestamp exists and is valid
-                  const isValidDate = timestamp && 
-                    timestamp instanceof Date && 
-                    !isNaN(timestamp.getTime()) &&
-                    typeof timestamp.toLocaleTimeString === 'function';
-                  
-                  if (isValidDate) {
-                    return timestamp.toLocaleTimeString();
-                  } else {
-                    // Fallback to static string
-                    return 'Just now';
-                  }
-                } catch (e) {
-                  console.warn('Protected ChatMessage from timestamp error:', e);
-                  return 'Just now';
-                }
-              })()}
-            </span>
-          </div>
+          {/* Removed timestamp display entirely */}
         </div>
 
         {/* Message Content */}

@@ -2,8 +2,6 @@ import { useState, useEffect } from 'react';
 import { AIModel, defaultModels, aiService } from '../services/ai';
 import { supabase } from '../lib/supabase';
 import { useAuthStore } from '../store/authStore';
-import { useSubscriptionStore } from '../store/subscriptionStore';
-import { useChatLimitStore } from '../store/chatLimitStore';
 import { marked } from 'marked';
 import hljs from 'highlight.js';
 
@@ -19,7 +17,6 @@ marked.setOptions({
 
 export interface MessageReaction {
   type: '👍';
-  timestamp: Date;
 }
 
 export interface Message {
@@ -27,7 +24,6 @@ export interface Message {
   text: string;
   isUser: boolean;
   model?: string;
-  timestamp: Date;
   reactions?: MessageReaction[];
   category?: 'question' | 'explanation' | 'code' | 'error' | 'success';
   codeBlocks?: { language: string; code: string }[];
@@ -40,7 +36,6 @@ export function useAIChat() {
       id: '1',
       text: "Hi! I'm your Bitcoin AI Tutor. What would you like to learn about?",
       isUser: false,
-      timestamp: new Date(),
       quickReplies: [
         "What is Bitcoin?",
         "How does mining work?",
@@ -56,10 +51,6 @@ export function useAIChat() {
   const [currentThoughts, setCurrentThoughts] = useState<string | null>(null);
   const [contextMemory, setContextMemory] = useState<number>(0);
   const { user } = useAuthStore();
-  const { subscription } = useSubscriptionStore();
-  const { checkLimit, incrementCount, getRemainingMessages } = useChatLimitStore();
-
-  const isPremium = user?.isAdmin || (subscription?.tier === 'premium' && subscription?.status === 'active');
 
   useEffect(() => {
     loadModels();
@@ -137,20 +128,12 @@ export function useAIChat() {
 
   const sendMessage = async (text: string, model: AIModel) => {
     if (!text.trim() || isProcessing) return;
-    
-    if (!isPremium && user) {
-      if (!checkLimit(user.id)) {
-        setError('You have reached your hourly message limit. Please upgrade to premium for unlimited access.');
-        return;
-      }
-    }
 
     const userMessage: Message = {
       id: Math.random().toString(36).substr(2, 9),
       text,
       isUser: true,
       model: model.name,
-      timestamp: new Date(),
       category: determineCategory(text),
       codeBlocks: parseCodeBlocks(text)
     };
@@ -179,22 +162,16 @@ export function useAIChat() {
       console.log('Sending message to AI service:', {
         modelName: model.name,
         modelId: model.id,
-        textLength: text.length,
-        isPremium
+        textLength: text.length
       });
 
       const response = await aiService.sendMessage(text);
-
-      if (!isPremium && user) {
-        incrementCount(user.id);
-      }
 
       const aiMessage: Message = {
         id: Math.random().toString(36).substr(2, 9),
         text: response,
         isUser: false,
         model: model.name,
-        timestamp: new Date(),
         category: determineCategory(response),
         codeBlocks: parseCodeBlocks(response),
         quickReplies: generateQuickReplies(response)
@@ -215,9 +192,7 @@ export function useAIChat() {
           provider: model.provider
         },
         userContext: {
-          isPremium,
-          hasUser: !!user,
-          remainingMessages: user ? getRemainingMessages(user.id) : null
+          hasUser: !!user
         }
       });
 
@@ -252,8 +227,6 @@ export function useAIChat() {
     isLoading,
     sendMessage,
     updateModel,
-    remainingMessages: !isPremium && user ? getRemainingMessages(user.id) : Infinity,
-    isPremium,
     currentThoughts,
     contextMemory,
     // Add missing methods that are referenced in AiChat.tsx

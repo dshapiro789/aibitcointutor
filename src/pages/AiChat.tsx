@@ -25,8 +25,7 @@ const AiChat: React.FC = () => {
     addModel,
     removeModel,
     isLoading,
-    remainingMessages,
-    isPremium,
+
     currentThoughts,
     addReaction,
     exportChatHistory,
@@ -227,239 +226,324 @@ const AiChat: React.FC = () => {
             className="bg-white border-b shadow-sm overflow-hidden"
           >
             <div className="p-4 max-w-5xl mx-auto">
-              <div className="flex justify-between items-center mb-4">
-                <h2 className="text-lg font-semibold text-gray-800">Settings</h2>
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="p-1 hover:bg-gray-100 rounded-full"
-                >
-                  <X className="h-5 w-5 text-gray-500" />
-                </button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div className="border rounded-xl p-4 bg-white shadow-sm">
-                  <h3 className="text-md font-semibold mb-3 flex items-center">
-                    <Bot className="h-5 w-5 text-orange-500 mr-2" />
-                    AI Models
-                  </h3>
-                  
-                  {models.map(model => (
-                    <div key={model.id} className="mb-3 pb-3 border-b last:border-b-0 last:mb-0 last:pb-0">
-                      <div className="flex justify-between items-start">
-                        <div className="flex items-center">
-                          <input
-                            type="radio"
-                            id={`model-${model.id}`}
-                            name="activeModel"
-                            checked={model.active}
-                            onChange={() => {
-                              const updatedModels = models.map(m => ({
-                                ...m,
-                                active: m.id === model.id
-                              }));
-                              updateModel(model.id, { active: true });
-                            }}
-                            className="h-4 w-4 text-orange-500"
-                          />
-                          <label htmlFor={`model-${model.id}`} className="ml-2 flex items-center">
-                            <span className="font-medium text-gray-700">{model.name}</span>
-                            <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                              {model.provider}
-                            </span>
-                          </label>
-                        </div>
-                        <div>
-                          <button
-                            onClick={() => setShowAdvanced(showAdvanced === model.id ? null : model.id)}
-                            className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
-                          >
-                            {showAdvanced === model.id ? (
-                              <>
-                                <ChevronUp className="h-3 w-3 mr-1" />
-                                Hide
-                              </>
-                            ) : (
-                              <>
-                                <ChevronDown className="h-3 w-3 mr-1" />
-                                Advanced
-                              </>
-                            )}
-                          </button>
-                        </div>
                       </div>
                       
-                      {showAdvanced === model.id && (
-                        <div className="mt-3 pl-6 space-y-2">
-                          {model.apiKeyRequired && (
-                            <div className="flex items-center">
-                              <div className="flex-1">
-                                <label className="text-xs text-gray-600 mb-1 block">API Key</label>
-                                <input
-                                  type="password"
-                                  value={model.apiKey || ''}
-                                  onChange={(e) => updateModel(model.id, { apiKey: e.target.value })}
-                                  placeholder="Enter your API key"
-                                  className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
-                                />
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div className="border rounded-xl p-4 bg-white shadow-sm">
+                          <h3 className="text-md font-semibold mb-3 flex items-center">
+                            <Bot className="h-5 w-5 text-orange-500 mr-2" />
+                            AI Models
+                          </h3>
+                          
+                          {models.map(model => (
+                            <div key={model.id} className="mb-3 pb-3 border-b last:border-b-0 last:mb-0 last:pb-0">
+                              <div className="flex justify-between items-start">
+                                <div className="flex items-center">
+                                  <input
+                                    type="radio"
+                                    id={`model-${model.id}`}
+                                    name="activeModel"
+                                    checked={model.active}
+                                    onChange={() => {
+                                      const updatedModels = models.map(m => ({
+                                        ...m,
+                                        active: m.id === model.id
+                                      }));
+                                      updateModel(model.id, { active: true });
+                                    }}
+                                    className="h-4 w-4 text-orange-500"
+                                  />
+                                  <label htmlFor={`model-${model.id}`} className="ml-2 flex items-center">
+                                    <span className="font-medium text-gray-700">{model.name}</span>
+                                    <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                      {model.provider}
+                                    </span>
+                                  </label>
+                                </div>
+                                <div>
+                                  <button
+                                    onClick={() => setShowAdvanced(showAdvanced === model.id ? null : model.id)}
+                                    className="text-xs text-gray-500 hover:text-gray-700 flex items-center"
+                                  >
+                                    {showAdvanced === model.id ? (
+                                      <>
+                                        <ChevronUp className="h-3 w-3 mr-1" />
+                                        Hide
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ChevronDown className="h-3 w-3 mr-1" />
+                                        Advanced
+                                      </>
+                                    )}
+                                  </button>
+                                </div>
+                              </div>
+                              
+                              {showAdvanced === model.id && (
+                                <div className="mt-3 pl-6 space-y-2">
+                                  {model.apiKeyRequired && (
+                                    <div className="flex items-center">
+                                      <div className="flex-1">
+                                        <label className="text-xs text-gray-600 mb-1 block">API Key</label>
+                                        <input
+                                          type="password"
+                                          value={model.apiKey || ''}
+                                          onChange={(e) => updateModel(model.id, { apiKey: e.target.value })}
+                                          placeholder="Enter your API key"
+                                          className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                                        />
+                                      </div>
+                                    </div>
+                                  )}
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div>
+                                      <label className="text-xs text-gray-600 mb-1 block">Temperature</label>
+                                      <input
+                                        type="number"
+                                        min="0"
+                                        max="2"
+                                        step="0.1"
+                                        value={model.temperature || 0.7}
+                                        onChange={(e) => updateModel(model.id, { temperature: parseFloat(e.target.value) })}
+                                        className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                                      />
+                                    </div>
+                                    <div>
+                                      <label className="text-xs text-gray-600 mb-1 block">Max Tokens</label>
+                                      <input
+                                        type="number"
+                                        min="100"
+                                        max="32000"
+                                        step="100"
+                                        value={model.maxTokens || 2000}
+                                        onChange={(e) => updateModel(model.id, { maxTokens: parseInt(e.target.value) })}
+                                        className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
+                                      />
+                                    </div>
+                                  </div>
+
+                                  {!model.apiKeyRequired && (
+                                    <button
+                                      onClick={() => {
+                                        if (typeof removeModel === 'function') {
+                                          removeModel(model.id);
+                                        }
+                                      }}
+                                      className="flex items-center text-red-600 hover:text-red-700"
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-1" />
+                                      Remove Model
+                                    </button>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                          
+                        </div>
+                        
+                        <div className="border rounded-xl p-4 bg-white shadow-sm">
+                          <h3 className="text-md font-semibold mb-3 flex items-center">
+                            <CreditCard className="h-5 w-5 text-orange-500 mr-2" />
+                            Account Status
+                          </h3>
+                          
+                          <div className="p-3 bg-gray-50 rounded-lg mb-4">
+                            <div className="flex items-center text-gray-700">
+                              <div>
+                                <div className="font-medium">Free Plan</div>
+                                <div className="text-sm text-gray-600">{remainingMessages} messages remaining this hour</div>
+                                <button
+                                  onClick={() => navigate('/subscription')}
+                                  className="mt-2 px-3 py-1 bg-orange-500 text-white text-sm rounded-lg shadow-sm hover:bg-orange-600 transition-colors flex items-center"
+                                >
+                                  <CreditCard className="h-4 w-4 mr-1" />
+                                  Upgrade Now
+                                </button>
                               </div>
                             </div>
-                          )}
-                          <div className="grid grid-cols-2 gap-2">
-                            <div>
-                              <label className="text-xs text-gray-600 mb-1 block">Temperature</label>
-                              <input
-                                type="number"
-                                min="0"
-                                max="2"
-                                step="0.1"
-                                value={model.temperature || 0.7}
-                                onChange={(e) => updateModel(model.id, { temperature: parseFloat(e.target.value) })}
-                                className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
-                              />
-                            </div>
-                            <div>
-                              <label className="text-xs text-gray-600 mb-1 block">Max Tokens</label>
-                              <input
-                                type="number"
-                                min="100"
-                                max="32000"
-                                step="100"
-                                value={model.maxTokens || 2000}
-                                onChange={(e) => updateModel(model.id, { maxTokens: parseInt(e.target.value) })}
-                                className="w-full px-3 py-1 text-sm border rounded focus:ring-1 focus:ring-orange-500 focus:border-orange-500"
-                              />
-                            </div>
                           </div>
-
-                          {!model.apiKeyRequired && (
+                          
+                          <div className="space-y-2">
                             <button
-                              onClick={() => {
-                                if (typeof removeModel === 'function') {
-                                  removeModel(model.id);
-                                }
-                              }}
-                              className="flex items-center text-red-600 hover:text-red-700"
+                              onClick={() => exportChatHistory()}
+                              className="w-full py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-700"
                             >
-                              <Trash2 className="h-4 w-4 mr-1" />
-                              Remove Model
+                              <Download className="h-4 w-4 mr-2" />
+                              Export Chat History
                             </button>
-                          )}
+                          </div>
                         </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Messages */}
+              <div className="flex-1 overflow-y-auto p-4" style={{ paddingBottom: '150px' }}>
+                {filteredMessages.length === 0 ? (
+                  <div className="h-full flex flex-col items-center justify-center text-center p-6">
+                    <Brain className="h-16 w-16 text-orange-300 mb-4" />
+                    <h2 className="text-2xl font-bold text-gray-700 mb-2">Welcome to AI Bitcoin Tutor</h2>
+                    <p className="text-gray-500 max-w-lg mb-6">
+                      I'm your personal AI tutor for learning about Bitcoin. Ask me anything from basic concepts to advanced technical details!
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg w-full">
+                      <button
+                        onClick={() => handleQuickReply("What is Bitcoin?")}
+                        className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+                      >
+                        <div className="font-medium">What is Bitcoin?</div>
+                        <div className="text-sm text-gray-500">Learn the basics</div>
+                      </button>
+                      <button
+                        onClick={() => handleQuickReply("How does blockchain work?")}
+                        className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+                      >
+                        <div className="font-medium">How does blockchain work?</div>
+                        <div className="text-sm text-gray-500">Technical foundations</div>
+                      </button>
+                      <button
+                        onClick={() => handleQuickReply("What's the difference between Bitcoin and other cryptocurrencies?")}
+                        className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+                      >
+                        <div className="font-medium">Bitcoin vs others</div>
+                        <div className="text-sm text-gray-500">Compare cryptocurrencies</div>
+                      </button>
+                      <button
+                        onClick={() => handleQuickReply("How can I buy Bitcoin safely?")}
+                        className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
+                      >
+                        <div className="font-medium">How to buy Bitcoin</div>
+                        <div className="text-sm text-gray-500">Safe purchasing guide</div>
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  filteredMessages.map((message) => (
+                    <ChatMessage
+                      key={message.id}
+                      id={message.id}
+                      text={message.text}
+                      isUser={message.isUser}
+                      model={message.model}
+                      reactions={message.reactions}
+                      category={message.category}
+                      codeBlocks={message.codeBlocks}
+                      quickReplies={message.quickReplies}
+                      onQuickReply={(reply) => {
+                        const activeModel = models.find(m => m.active);
+                        if (activeModel) {
+                          sendMessage(reply, activeModel);
+                        }
+                      }}
+                      onAddReaction={addReaction}
+                      onSpeakMessage={() => {
+                        speak(message.text);
+                      }}
+                      isSpeaking={isSpeaking}
+                      onStopSpeaking={stopSpeaking}
+                    />
+                  ))
+                )}
+                
+                {isProcessing && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="my-4"
+                  >
+                    <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm max-w-[85%] ms-auto">
+                      <div className="flex items-center space-x-4 mb-2">
+                        <div className="flex-shrink-0">
+                          <div className="h-8 w-8 bg-orange-500 text-white rounded-full flex items-center justify-center">
+                            <Bot className="h-5 w-5" />
+                          </div>
+                        </div>
+                        <div>
+                          <div className="font-medium">AI Assistant</div>
+                          <div className="text-sm text-gray-500">Thinking...</div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-1 mt-1">
+                        <div className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="h-2 w-2 bg-gray-300 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                      </div>
+                      {currentThoughts && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          className="text-base text-gray-500 italic border-l-2 border-orange-200 pl-4"
+                        >
+                          {currentThoughts}
+                        </motion.div>
                       )}
                     </div>
-                  ))}
-                  
-                </div>
-                
-                <div className="border rounded-xl p-4 bg-white shadow-sm">
-                  <h3 className="text-md font-semibold mb-3 flex items-center">
-                    <CreditCard className="h-5 w-5 text-orange-500 mr-2" />
-                    Account Status
-                  </h3>
-                  
-                  <div className="p-3 bg-gray-50 rounded-lg mb-4">
-                    {isPremium ? (
-                      <div className="flex items-center text-green-700">
-                        <Crown className="h-5 w-5 mr-2 text-yellow-500" />
-                        <div>
-                          <div className="font-medium">Premium Subscription</div>
-                          <div className="text-sm text-gray-600">Unlimited messages and priority support</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center text-gray-700">
-                        <div>
-                          <div className="font-medium">Free Plan</div>
-                          <div className="text-sm text-gray-600">{remainingMessages} messages remaining this hour</div>
-                          <button
-                            onClick={() => navigate('/subscription')}
-                            className="mt-2 px-3 py-1 bg-orange-500 text-white text-sm rounded-lg shadow-sm hover:bg-orange-600 transition-colors flex items-center"
-                          >
-                            <CreditCard className="h-4 w-4 mr-1" />
-                            Upgrade Now
-                          </button>
-                        </div>
-                      </div>
+                  </motion.div>
+                )}
+
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex justify-center"
+                  >
+                    <div className="bg-red-50 text-red-800 p-4 rounded-xl max-w-[85%] flex items-center shadow-lg border border-red-200">
+                      <AlertTriangle className="h-5 w-5 mr-2 flex-shrink-0" />
+                      <span className="text-base">{error}</span>
+                    </div>
+                  </motion.div>
+                )}
+                <div ref={messagesEndRef} />
+              </div>
+
+              {/* Input */}
+              <div className="bg-white border-t shadow-lg p-4">
+                <form onSubmit={handleSubmit} className="flex items-center space-x-3 max-w-5xl mx-auto">
+                  <div className="flex items-center space-x-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowSettings(!showSettings)}
+                      className={`p-3 rounded-xl transition-colors ${
+                        showSettings 
+                          ? 'bg-orange-500 text-white' 
+                          : 'text-gray-500 hover:bg-gray-100'
+                      }`}
+                    >
+                      <Settings className="h-5 w-5" />
+                    </button>
+
+                    {isSupported && (
+                      <button
+                        type="button"
+                        onClick={handleVoiceToggle}
+                        className={`p-3 rounded-xl transition-colors ${
+                          isListening
+                            ? 'bg-red-500 text-white'
+                            : 'text-gray-500 hover:bg-gray-100'
+                        }`}
+                      >
+                        {isListening ? (
+                          <MicOff className="h-5 w-5" />
+                        ) : (
+                          <Mic className="h-5 w-5" />
+                        )}
+                      </button>
                     )}
                   </div>
-                  
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => exportChatHistory()}
-                      className="w-full py-2 px-4 border border-gray-300 rounded-lg flex items-center justify-center hover:bg-gray-50 transition-colors text-gray-700"
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Chat History
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-4" style={{ paddingBottom: '150px' }}>
-        {filteredMessages.length === 0 ? (
-          <div className="h-full flex flex-col items-center justify-center text-center p-6">
-            <Brain className="h-16 w-16 text-orange-300 mb-4" />
-            <h2 className="text-2xl font-bold text-gray-700 mb-2">Welcome to AI Bitcoin Tutor</h2>
-            <p className="text-gray-500 max-w-lg mb-6">
-              I'm your personal AI tutor for learning about Bitcoin. Ask me anything from basic concepts to advanced technical details!
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-w-lg w-full">
-              <button
-                onClick={() => handleQuickReply("What is Bitcoin?")}
-                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
-              >
-                <div className="font-medium">What is Bitcoin?</div>
-                <div className="text-sm text-gray-500">Learn the basics</div>
-              </button>
-              <button
-                onClick={() => handleQuickReply("How does blockchain work?")}
-                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
-              >
-                <div className="font-medium">How does blockchain work?</div>
-                <div className="text-sm text-gray-500">Technical foundations</div>
-              </button>
-              <button
-                onClick={() => handleQuickReply("What's the difference between Bitcoin and other cryptocurrencies?")}
-                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
-              >
-                <div className="font-medium">Bitcoin vs others</div>
-                <div className="text-sm text-gray-500">Compare cryptocurrencies</div>
-              </button>
-              <button
-                onClick={() => handleQuickReply("How can I buy Bitcoin safely?")}
-                className="px-4 py-3 border border-orange-200 rounded-xl bg-white hover:bg-orange-50 transition-colors text-left text-gray-700 shadow-sm"
-              >
-                <div className="font-medium">How to buy Bitcoin</div>
-                <div className="text-sm text-gray-500">Safe purchasing guide</div>
-              </button>
-            </div>
-          </div>
-        ) : (
-          filteredMessages.map((message) => (
-            <ChatMessage
-              key={message.id}
-              id={message.id}
-              text={message.text}
-              isUser={message.isUser}
-              model={message.model}
-              timestamp={message.timestamp}
-              reactions={message.reactions}
-              category={message.category}
-              codeBlocks={message.codeBlocks}
-              quickReplies={message.quickReplies}
-              isPremium={isPremium}
-              onQuickReply={(reply) => {
-                const activeModel = models.find(m => m.active);
-                if (activeModel) {
-                  sendMessage(reply, activeModel);
-                }
-              }}
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={input}
+                      onChange={(e) => setInput(e.target.value)}
+                      placeholder="Ask anything about Bitcoin..."
+                      className="w-full px-6 py-3 text-lg border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
+                      disabled={isProcessing}
+                    />
               onAddReaction={addReaction}
               onSpeakMessage={() => {
                 speak(message.text);
@@ -561,19 +645,14 @@ const AiChat: React.FC = () => {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={isPremium ? "Ask anything about Bitcoin..." : "Ask anything about Bitcoin"}
+              placeholder="Ask anything about Bitcoin..."
               className="w-full px-6 py-3 text-lg border-2 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-shadow duration-200 shadow-sm hover:shadow-md"
               disabled={isProcessing}
             />
           </div>
 
           <div className="flex items-center space-x-3">
-            {!isPremium && (
-              <div className="hidden sm:flex items-center px-3 py-2 bg-orange-50 text-orange-700 rounded-lg">
-                <MessageSquare className="h-4 w-4 mr-2" />
-                <span className="text-sm font-medium">{remainingMessages} messages left</span>
-              </div>
-            )}
+
 
             <button
               type="submit"
@@ -586,15 +665,7 @@ const AiChat: React.FC = () => {
           </div>
         </form>
 
-        {/* Mobile message counter */}
-        {!isPremium && (
-          <div className="sm:hidden flex justify-center mt-2">
-            <div className="flex items-center text-sm text-gray-500">
-              <MessageSquare className="h-4 w-4 mr-1" />
-              <span>{remainingMessages} messages remaining</span>
-            </div>
-          </div>
-        )}
+
       </div>
     </div>
   );
