@@ -52,9 +52,14 @@ function App() {
               path="/ai-chat" 
               element={
                 <RequireAuth>
-                  <ErrorBoundary fallback={<UltraMinimalAiChat />}>
-                    <MinimalAiChat />
-                  </ErrorBoundary>
+                  {/* Use UltraMinimalAiChat in production to avoid any date-related errors */}
+                  {process.env.NODE_ENV === 'production' ? (
+                    <UltraMinimalAiChat />
+                  ) : (
+                    <ErrorBoundary fallback={<UltraMinimalAiChat />}>
+                      <MinimalAiChat />
+                    </ErrorBoundary>
+                  )}
                 </RequireAuth>
               } 
             />
