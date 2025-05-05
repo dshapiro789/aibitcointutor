@@ -138,16 +138,16 @@ jobs:
           # Setup production build
           node build-prod.js
           
-          # Run production build with additional flags
+          # Run production build with our production-specific config
           export NODE_ENV=production
-          npm run build || {
-            echo "Standard build failed. Trying with additional flags..."
-            NODE_OPTIONS=--max_old_space_size=4096 npm run build
+          npm run build:prod || {
+            echo "Production build failed. Trying with additional memory..."
+            NODE_OPTIONS=--max_old_space_size=4096 npm run build:prod
           } || {
             echo "Build failed. Checking for TypeScript errors..."
             npx tsc --noEmit
             echo "Checking for other build issues..."
-            npm run build --verbose
+            npm run build:prod --verbose
             exit 1
           }
 
