@@ -15,7 +15,7 @@ marked.setOptions({
     }
     return hljs.highlightAuto(code).value;
   }
-});
+} as any);
 
 export interface MessageReaction {
   type: '👍';
@@ -240,7 +240,9 @@ export function useAIChat() {
   const exportChatHistory = () => {};
   const searchMessages = () => {};
   const addModel = () => {};
-  const removeModel = () => {};
+  const removeModel = (modelId: string) => {
+    setModels(prevModels => prevModels.filter(model => model.id !== modelId));
+  };
 
   return {
     messages,

@@ -444,14 +444,28 @@ const AiChat: React.FC = () => {
           filteredMessages.map((message) => (
             <ChatMessage
               key={message.id}
-              message={message}
+              id={message.id}
+              text={message.text}
+              isUser={message.isUser}
+              model={message.model}
+              timestamp={message.timestamp}
+              reactions={message.reactions}
+              category={message.category}
+              codeBlocks={message.codeBlocks}
+              quickReplies={message.quickReplies}
+              isPremium={isPremium}
+              onQuickReply={(reply) => {
+                const activeModel = models.find(m => m.active);
+                if (activeModel) {
+                  sendMessage(reply, activeModel);
+                }
+              }}
               onAddReaction={addReaction}
               onSpeakMessage={() => {
                 speak(message.text);
               }}
               isSpeaking={isSpeaking}
               onStopSpeaking={stopSpeaking}
-              isPremiumUser={isPremium}
             />
           ))
         )}
