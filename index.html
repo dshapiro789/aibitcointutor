@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Bitcoin Tutor</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    }
+    body {
+      background-color: #fff7ed;
+      color: #333;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .app-container {
+      max-width: 1024px;
+      margin: 0 auto;
+      padding: 1rem;
+      width: 100%;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+    }
+    .chat-container {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      overflow-y: auto;
+      max-height: calc(100vh - 180px);
+      border-radius: 0.5rem;
+      background: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .message {
+      border-radius: 0.5rem;
+      padding: 1rem;
+      max-width: 90%;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .user-message {
+      align-self: flex-end;
+      background: linear-gradient(to bottom right, #f97316, #ea580c);
+      color: white;
+      margin-left: auto;
+    }
+    .ai-message {
+      align-self: flex-start;
+      background: white;
+      border: 1px solid #e5e7eb;
+    }
+    .input-container {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: auto;
+    }
+    input {
+      flex-grow: 1;
+      padding: 0.75rem 1rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      font-size: 1rem;
+    }
+    button {
+      padding: 0.75rem 1.5rem;
+      background: #f97316;
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+    button:hover {
+      background: #ea580c;
+    }
+    button:disabled {
+      background: #d1d5db;
+      cursor: not-allowed;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 0;
+      margin-bottom: 1rem;
+    }
+    h1 {
+      font-size: 1.5rem;
+      color: #f97316;
+    }
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      overflow-x: auto;
+      margin: 1rem 0;
+    }
+    code {
+      font-family: monospace;
+    }
+    p {
+      margin-bottom: 0.5rem;
+    }
+    .loading {
+      display: inline-block;
+      width: 1.5rem;
+      height: 1.5rem;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <div class="header">
+      <h1>AI Bitcoin Tutor</h1>
+    </div>
+    <div id="chat-container" class="chat-container">
+      <div class="message ai-message">
+        <p>Hello! I'm your AI Bitcoin tutor. How can I help you learn about Bitcoin today?</p>
+      </div>
+    </div>
+    <div class="input-container">
+      <input
+        type="text"
+        id="message-input"
+        placeholder="Ask anything about Bitcoin..."
+        autocomplete="off"
+      />
+      <button id="send-button">Send</button>
+    </div>
+  </div>
+
+  <script>
+    // Ultra-minimal implementation with no dependencies
+    // The API key is directly injected by the build script
+    const API_KEY = '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';
+    const API_URL = 'https://openrouter.ai/api/v1/chat/completions';
+    
+    const chatContainer = document.getElementById('chat-container');
+    const messageInput = document.getElementById('message-input');
+    const sendButton = document.getElementById('send-button');
+    
+    let messageIdCounter = 0;
+    let messages = [
+      { role: 'system', content: 'You are a Bitcoin tutor who helps people learn about Bitcoin. You provide clear, concise explanations about Bitcoin concepts. Always be helpful and educational.' },
+      { role: 'assistant', content: 'Hello! I\'m your AI Bitcoin tutor. How can I help you learn about Bitcoin today?' }
+    ];
+    
+    function generateId() {
+      messageIdCounter++;
+      return `msg-${messageIdCounter}`;
+    }
+    
+    function addMessage(content, isUser = false) {
+      const messageElement = document.createElement('div');
+      messageElement.classList.add('message');
+      messageElement.classList.add(isUser ? 'user-message' : 'ai-message');
+      
+      // Process markdown-like syntax for code blocks
+      let formattedContent = content;
+      
+      // Format code blocks
+      formattedContent = formattedContent.replace(/```([\s\S]*?)```/g, function(match, code) {
+        return `<pre><code>${code.trim()}</code></pre>`;
+      });
+      
+      // Format inline code
+      formattedContent = formattedContent.replace(/`([^`]+)`/g, '<code>$1</code>');
+      
+      // Format paragraphs
+      const paragraphs = formattedContent.split('\n\n');
+      formattedContent = paragraphs.map(p => `<p>${p}</p>`).join('');
+      
+      messageElement.innerHTML = formattedContent;
+      chatContainer.appendChild(messageElement);
+      chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+    
+    async function sendMessage() {
+      const content = messageInput.value.trim();
+      if (!content) return;
+      
+      // Add user message to UI
+      addMessage(content, true);
+      
+      // Add user message to messages array
+      messages.push({ role: 'user', content });
+      
+      // Clear input
+      messageInput.value = '';
+      
+      // Disable input and button while waiting for response
+      messageInput.disabled = true;
+      sendButton.disabled = true;
+      
+      // Add loading indicator
+      const loadingMessage = document.createElement('div');
+      loadingMessage.className = 'message ai-message';
+      loadingMessage.innerHTML = '<div class="loading"></div>';
+      chatContainer.appendChild(loadingMessage);
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${API_KEY}`,
+            'HTTP-Referer': window.location.origin
+          },
+          body: JSON.stringify({
+            model: 'anthropic/claude-3-sonnet-20240229',
+            messages: messages,
+            temperature: 0.7,
+            max_tokens: 1000
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        const aiMessage = data.choices[0].message.content;
+        
+        // Remove loading indicator
+        chatContainer.removeChild(loadingMessage);
+        
+        // Add AI response to UI
+        addMessage(aiMessage);
+        
+        // Add AI response to messages array
+        messages.push({ role: 'assistant', content: aiMessage });
+      } catch (error) {
+        console.error('Error:', error);
+        
+        // Remove loading indicator
+        chatContainer.removeChild(loadingMessage);
+        
+        // Show error message
+        addMessage('Sorry, I encountered an error. Please try again.');
+      } finally {
+        // Re-enable input and button
+        messageInput.disabled = false;
+        sendButton.disabled = false;
+        messageInput.focus();
+      }
+    }
+    
+    // Event listeners
+    sendButton.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        sendMessage();
+      }
+    });
+    
+    // Focus input on load
+    messageInput.focus();
+
+    // Log API key availability (not the key itself)
+    console.log('API Key availability check: ' + (API_KEY ? `"Key present (length: ${API_KEY.length})"` : '"No API key"'));
+  </script>
+</body>
+</html>
