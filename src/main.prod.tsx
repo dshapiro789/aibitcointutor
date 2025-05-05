@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
+import { installDateProtection } from './utils/dateUtils';
+
+// Install global protection for Date methods
+installDateProtection();
 
 // Production-specific error handler
 class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean, error?: Error }> {
