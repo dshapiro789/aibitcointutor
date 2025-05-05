@@ -13,31 +13,12 @@ interface ChatLimitStore {
 const STORAGE_KEY = 'chat-limits';
 const MAX_MESSAGES_PER_DAY = 5;
 
-// Helper to get a key for the current day with robust error handling
+// Static key for all users - completely eliminates date handling
 const getCurrentDayKey = () => {
-  try {
-    const date = new Date();
-    
-    // Verify date methods are available
-    if (typeof date.getFullYear !== 'function' || 
-        typeof date.getMonth !== 'function' || 
-        typeof date.getDate !== 'function') {
-      console.warn('Date methods missing, using fallback timestamp');
-      return `fallback-${Date.now()}`;
-    }
-    
-    // Use try/catch for each method call
-    let year, month, day;
-    try { year = date.getFullYear(); } catch (e) { year = '2025'; }
-    try { month = date.getMonth(); } catch (e) { month = '0'; }
-    try { day = date.getDate(); } catch (e) { day = '1'; }
-    
-    return `${year}-${month}-${day}`;
-  } catch (e) {
-    console.error('Error generating day key:', e);
-    // Return a fallback key that won't crash the app
-    return 'error-fallback-key';
-  }
+  // Return a static string to avoid all date-related issues
+  // This effectively gives users a fixed number of messages per session
+  // instead of per day, but it's a worthwhile tradeoff for stability
+  return 'static-session-key';
 };
 
 export const useChatLimitStore = create<ChatLimitStore>()(

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useAuthStore } from '../store/authStore';
 
 /**
@@ -16,6 +16,13 @@ const UltraMinimalAiChat: React.FC = () => {
   ]);
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useAuthStore();
+  const messageIdCounter = useRef(0);
+  
+  // Safe ID generation without using Date
+  const generateId = () => {
+    messageIdCounter.current += 1;
+    return `msg-${messageIdCounter.current}`;
+  };
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +30,7 @@ const UltraMinimalAiChat: React.FC = () => {
     
     // Add user message
     const userMessage = {
-      id: Date.now().toString(),
+      id: generateId(),
       text: input,
       isUser: true
     };
@@ -97,7 +104,7 @@ const UltraMinimalAiChat: React.FC = () => {
       
       // Add AI response
       setMessages(prev => [...prev, {
-        id: Date.now().toString(),
+        id: generateId(),
         text: aiResponse,
         isUser: false
       }]);
@@ -105,7 +112,7 @@ const UltraMinimalAiChat: React.FC = () => {
       console.error('Error:', error);
       // Add error message
       setMessages(prev => [...prev, {
-        id: Date.now().toString(),
+        id: generateId(),
         text: "Sorry, I couldn't process your request right now. Please try again later.",
         isUser: false
       }]);
