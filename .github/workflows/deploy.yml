@@ -49,8 +49,13 @@ jobs:
           echo "VITE_MAX_MESSAGES_PER_DAY=5" >> .env
           echo "VITE_ENABLE_VOICE=true" >> .env
 
-          # Debug: Show env file exists (without content)
+          # Setup env-config.js for window.ENV_VARS access in production
+          sed -i "s/%%OPENROUTER_API_KEY%%/${{ secrets.VITE_OPENROUTER_API_KEY }}/g" public/env-config.js
+          sed -i "s#%%OPENROUTER_ENDPOINT%%#https://openrouter.ai/api/v1#g" public/env-config.js
+          
+          # Debug: Show env files exist (without content)
           ls -la .env
+          ls -la public/env-config.js
 
       - name: Build
         env:

@@ -21,22 +21,56 @@ class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { has
 
   render() {
     if (this.state.hasError) {
-      // Fallback UI when an error occurs
+      // Import the App component to access routes
+      const App = require('./App').default;
+      // Use simplified UI for production errors
       return (
-        <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center p-4 text-center">
-          <h1 className="text-2xl font-bold text-red-600 mb-4">Something went wrong</h1>
-          <p className="mb-4 text-gray-600">
-            We're experiencing some technical difficulties. Please try again later.
-          </p>
-          <pre className="bg-gray-100 p-4 rounded text-sm text-left max-w-full overflow-auto">
-            {this.state.error?.toString()}
-          </pre>
-          <button
-            onClick={() => window.location.href = '/'}
-            className="mt-6 px-4 py-2 bg-orange-500 text-white rounded-lg hover:bg-orange-600"
-          >
-            Return to Home
-          </button>
+        <div className="min-h-screen bg-orange-50 flex flex-col">
+          <header className="bg-white p-4 shadow-sm">
+            <h1 className="text-xl font-bold text-center text-orange-600">Bitcoin AI Tutor</h1>
+            <p className="text-center text-sm text-gray-500">Fallback Mode</p>
+          </header>
+          <main className="flex-1 p-4">
+            <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-md">
+              <div className="mb-6 pb-6 border-b border-gray-100">
+                <h2 className="text-lg font-semibold text-red-600">An error occurred</h2>
+                <p className="text-gray-600 mt-2">
+                  We encountered a technical issue, but you can still use the basic chat functionality below.
+                </p>
+              </div>
+              
+              <div className="py-4">
+                {/* Simplified chat interface */}
+                <div className="mb-4 p-3 bg-white border border-gray-200 rounded-lg">
+                  <p>Hi! I'm your Bitcoin AI Tutor. What would you like to learn about?</p>
+                </div>
+                
+                <form className="mt-4">
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Ask about Bitcoin..."
+                      className="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
+                    />
+                    <button
+                      className="px-4 py-2 bg-orange-500 text-white rounded-lg"
+                    >
+                      Send
+                    </button>
+                  </div>
+                </form>
+              </div>
+              
+              <div className="mt-6 pt-6 border-t border-gray-100 text-right">
+                <button
+                  onClick={() => window.location.href = '/'}
+                  className="px-4 py-2 text-sm text-orange-600 hover:text-orange-700"
+                >
+                  Return to Home
+                </button>
+              </div>
+            </div>
+          </main>
         </div>
       );
     }

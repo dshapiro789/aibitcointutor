@@ -37,12 +37,43 @@ const UltraMinimalAiChat: React.FC = () => {
       const systemPrompt = `You are a knowledgeable Bitcoin educator. 
         Provide concise, factual information about Bitcoin and cryptocurrency.`;
       
+      // Get API key safely with fallbacks for production
+      const getApiKey = () => {
+        try {
+          return import.meta.env.VITE_OPENROUTER_API_KEY || 
+                 window.ENV_VARS?.OPENROUTER_API_KEY || 
+                 ''; // Empty fallback
+        } catch (e) {
+          console.error('Error accessing API key:', e);
+          return '';
+        }
+      };
+      
+      // Get API endpoint with fallbacks
+      const getApiEndpoint = () => {
+        try {
+          return import.meta.env.VITE_OPENROUTER_ENDPOINT || 
+                 window.ENV_VARS?.OPENROUTER_ENDPOINT || 
+                 'https://openrouter.ai/api/v1';
+        } catch (e) {
+          return 'https://openrouter.ai/api/v1';
+        }
+      };
+      
+      // Safely get API key
+      const apiKey = getApiKey();
+      const apiEndpoint = getApiEndpoint();
+      
+      if (!apiKey) {
+        throw new Error('API key not available');
+      }
+      
       // Simplified fetch to OpenRouter API
-      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+      const response = await fetch(`${apiEndpoint}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${import.meta.env.VITE_OPENROUTER_API_KEY}`,
+          'Authorization': `Bearer ${apiKey}`,
           'HTTP-Referer': 'https://aibitcointutor.com',
           'X-Title': 'AI Bitcoin Tutor'
         },
